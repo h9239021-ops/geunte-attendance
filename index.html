@@ -871,6 +871,7 @@
     <nav class="sidenav-nav" id="pageTabs">
       <button class="side-tab-btn active" data-page="summary" type="button">대시보드</button>
       <button class="side-tab-btn" data-page="filter" type="button">근태 자동 필터링</button>
+      <button class="side-tab-btn" data-page="rawfiles" type="button">원본 데이터</button>
       <button class="side-tab-btn" data-page="history" type="button">저장 이력</button>
       <button class="side-tab-btn" data-page="mail" type="button">메일 발송</button>
       <button class="side-tab-btn" data-page="notes" type="button">관리 의견</button>
@@ -884,7 +885,7 @@
 
   <div class="page-intro">
     <h2 class="page-intro-title">근태 기록 관리 페이지</h2>
-    <p class="page-intro-desc">네이버웍스에서 내려받은 출퇴근 현황 / 근로시간 현황 엑셀을 올리면, 매주·매월 수기로 하던 필터링을 대신 돌려 대상자만 뽑아드립니다. 파일은 이 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
+    <p class="page-intro-desc">네이버웍스에서 내려받은 출퇴근 현황 / 근로시간 현황 엑셀을 올리면, 매주·매월 수기로 하던 필터링을 대신 돌려 대상자만 뽑아드립니다. 필터링 계산 자체는 이 브라우저 안에서 이루어지고, 올리는 원본 파일도 선택한 연도·월·사업장 기준으로 그대로 자동 저장됩니다 (나중에 "원본 데이터" 탭에서 다시 확인·다운로드할 수 있어요).</p>
   </div>
 
   <!-- 기간 및 사업장 선택 -->
@@ -1112,6 +1113,62 @@
   </div>
 
   </div><!-- /#page-filter -->
+
+  <div class="page-panel" id="page-rawfiles">
+
+  <div class="page-intro">
+    <h2 class="page-intro-title">원본 데이터</h2>
+    <p class="page-intro-desc">"근태 자동 필터링"에서 올린 출퇴근 현황 · 근로시간 현황 · 인원 현황 원본 파일은 여기 자동으로 쌓입니다(그 탭에서 선택한 연도·월·사업장 기준). 사업장 · 연도 · 월을 선택하면 그 기간에 저장된 원본 파일 목록이 아래에 나타나고, 다시 내려받거나 지울 수 있습니다. 필터링과 무관하게 다른 파일을 따로 보관하고 싶을 때는 아래에서 직접 올릴 수도 있습니다.</p>
+  </div>
+
+  <div class="card" id="rawUploadCard">
+    <h2>원본 파일 직접 올리기 <span style="font-weight:400;color:var(--muted);font-size:13px;">(선택 — "근태 자동 필터링"에서 올린 파일은 이미 자동 저장되어 있어요)</span></h2>
+    <div class="params-grid">
+      <div class="field">
+        <label>연도</label>
+        <select id="r_year">
+          <option value="">선택</option>
+          <option>2024</option>
+          <option>2025</option>
+          <option>2026</option>
+          <option>2027</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>월</label>
+        <select id="r_month">
+          <option value="">선택</option>
+          <option>1월</option><option>2월</option><option>3월</option><option>4월</option>
+          <option>5월</option><option>6월</option><option>7월</option><option>8월</option>
+          <option>9월</option><option>10월</option><option>11월</option><option>12월</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>사업장</label>
+        <select id="r_company">
+          <option value="">선택</option>
+          <option>(주)커넥트웨이브</option>
+          <option>몰테일 한국법인</option>
+        </select>
+      </div>
+    </div>
+    <div class="upload-row" style="margin-top:10px;">
+      <label class="file-btn">
+        파일 선택 (여러 개 가능)
+        <input type="file" id="rawFileInput" multiple/>
+      </label>
+      <button class="btn primary" id="rawUploadBtn" type="button">저장</button>
+    </div>
+    <p class="file-status" id="rawUploadStatus" style="margin-top:8px;"></p>
+    <p class="hint">연도 · 월 · 사업장을 먼저 선택하고 파일을 고르면, 고른 파일 그대로(가공 없이) 서버에 저장됩니다. 파일 형식 제한은 없고, 파일당 20MB까지 올릴 수 있어요.</p>
+  </div>
+
+  <div class="card">
+    <div class="divider-label">저장된 원본 파일 — <span id="rawScopeLabel">연도 · 월 · 사업장을 선택하면 나타납니다</span></div>
+    <div class="table-wrap"><table id="table_rawFiles"></table></div>
+  </div>
+
+  </div><!-- /#page-rawfiles -->
 
   <div class="page-panel active" id="page-summary">
 
@@ -1590,7 +1647,7 @@
 
   </div><!-- /#page-notes -->
 
-  <footer class="note">지각자·누락자·미달자 등 필터링 계산은 모두 이 브라우저 안에서만 이루어집니다. "저장" 버튼을 누르기 전까지는 업로드한 파일이 어디로도 전송되지 않아요. "저장"을 누르면 그 시점의 명단(성명·부서·날짜 등)이 이 페이지 전용 저장소에 기록되며, 커넥트웨이브 조직 구성원만 접근할 수 있습니다. 회사 내부 인사 자료이니 공용 기기에서는 사용 후 창을 닫아 주세요.</footer>
+  <footer class="note">지각자·누락자·미달자 등 필터링 계산 자체는 이 브라우저 안에서 이루어집니다. 계산 결과(명단)는 "저장" 버튼을 눌러야 이 페이지 전용 저장소에 남고, "근태 자동 필터링"에 올리는 원본 파일(엑셀)은 선택하는 즉시 원본 그대로 같은 저장소에 자동 저장됩니다 — "원본 데이터" 탭에서 다시 확인·다운로드할 수 있어요. "원본 데이터" 탭에서 직접 올리는 파일도 마찬가지로 즉시 저장됩니다. 모두 편집 권한이 있는 커넥트웨이브 조직 구성원만 접근할 수 있습니다. 회사 내부 인사 자료이니 공용 기기에서는 사용 후 창을 닫아 주세요.</footer>
 
   </main>
 </div>
@@ -1656,7 +1713,8 @@
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // Claude db capability의 컬렉션 이름 -> 실제 Postgres 테이블 이름
-  const TABLE_MAP = { reports: 'geunte_reports', mailLog: 'geunte_mail_log', managementNotes: 'geunte_management_notes' };
+  const TABLE_MAP = { reports: 'geunte_reports', mailLog: 'geunte_mail_log', managementNotes: 'geunte_management_notes', rawFiles: 'geunte_raw_files' };
+  const RAW_FILES_BUCKET = 'geunte-raw-files';
 
   function camelToSnake(s){ return String(s).replace(/[A-Z]/g, c => '_' + c.toLowerCase()); }
   function snakeToCamel(s){ return String(s).replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase()); }
@@ -2026,7 +2084,7 @@
   }
 
   /* ---------------- file loading ---------------- */
-  function loadFile(input, targetKey, defs, statusEl, onLoaded){
+  function loadFile(input, targetKey, defs, statusEl, onLoaded, archiveSourceKind){
     input.addEventListener('change', function(e){
       const f = e.target.files[0];
       if(!f) return;
@@ -2045,6 +2103,9 @@
           state[targetKey] = { rows, headers, mapping, isExample:false, sig };
           statusEl.innerHTML = '<b>' + f.name + '</b> · ' + rows.length + '행 불러옴';
           onLoaded();
+          // 올린 원본 파일을 그대로(가공 없이) 자동으로 같이 보관한다 — 필터링 계산 자체는 여전히
+          // 이 브라우저 안에서만 이루어지고, 원본 파일 저장만 별도로 서버에 자동 반영된다 (2026-09-28 신규).
+          if(archiveSourceKind){ archiveRawFile(f, archiveSourceKind, statusEl); }
         }catch(err){
           statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
         }
@@ -3215,9 +3276,188 @@
     subscribeMailVersions(); // db가 이제 준비됐으니 메일 발송 버전 목록도 다시 계산
     subscribeMailLogView(); // db가 이제 준비됐으니 발송·회신 누적 현황도 다시 계산
     loadManagementNotes(); // db가 이제 준비됐으니 관리 의견 이력도 다시 불러온다 (2026-09-15 신규)
+    subscribeRawFiles(); // db가 이제 준비됐으니 원본 데이터 목록도 다시 계산 (2026-09-28 신규)
   }
 
   document.getElementById('saveBtn').addEventListener('click', saveVersion);
+
+  /* ---------------- 원본 데이터 (2026-09-28 신규) ----------------
+     "근태 자동 필터링"의 계산 결과 저장(db.collection('reports'))과는 완전히 별개의 기능이다.
+     여기서는 가공하지 않은 원본 파일 자체를 Supabase Storage 버킷(geunte-raw-files)에 그대로
+     올리고, geunte_raw_files 테이블에는 그 파일을 찾기 위한 메타데이터(파일명·저장 경로·용량 등)만
+     남긴다. db 셰임(createDbShim)이 이미 흉내내는 Firestore 스타일 호출(collection/where/
+     orderBy/onSnapshot/add/doc().delete())을 메타데이터 테이블에도 그대로 재사용한다 — 바이너리
+     업로드/다운로드만 supabaseClient.storage를 직접 호출한다. */
+  let unsubscribeRawFiles = null;
+
+  function rawScope(){
+    return {
+      year: document.getElementById('r_year').value,
+      month: document.getElementById('r_month').value,
+      company: document.getElementById('r_company').value
+    };
+  }
+
+  function rawFilesQuery(scope){
+    return db.collection('rawFiles').where('company','==',scope.company).where('year','==',scope.year).where('month','==',scope.month);
+  }
+
+  function setRawStatus(msg, isError){
+    const el = document.getElementById('rawUploadStatus');
+    el.textContent = msg;
+    el.style.color = isError ? 'var(--critical)' : 'var(--text-muted)';
+  }
+
+  function fmtBytes(n){
+    if(n === null || n === undefined) return '-';
+    if(n < 1024) return n + ' B';
+    if(n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+    return (n/1024/1024).toFixed(1) + ' MB';
+  }
+
+  // 실제 업로드+메타데이터 기록 로직 — "원본 데이터" 탭의 수동 업로드(uploadRawFiles)와
+  // "근태 자동 필터링" 탭의 자동 보관(archiveRawFile)이 공통으로 쓴다.
+  async function storeRawFile(file, scope, sourceKind, uploaderEmail){
+    const randomKey = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now());
+    const path = scope.company + '/' + scope.year + '/' + scope.month + '/' + randomKey;
+    const { error: upErr } = await supabaseClient.storage.from(RAW_FILES_BUCKET).upload(path, file, { contentType: file.type || 'application/octet-stream' });
+    if(upErr) throw upErr;
+    await db.collection('rawFiles').add({
+      company: scope.company, year: scope.year, month: scope.month,
+      fileName: file.name, storagePath: path, sizeBytes: file.size,
+      contentType: file.type || '', uploadedByEmail: uploaderEmail || '',
+      sourceKind: sourceKind || ''
+    });
+  }
+
+  async function uploadRawFiles(){
+    if(!db){ setRawStatus('서버 저장 기능을 쓸 수 없어요.', true); return; }
+    const scope = rawScope();
+    if(!scope.year || !scope.month || !scope.company){ setRawStatus('먼저 연도 · 월 · 사업장을 선택해주세요.', true); return; }
+    const input = document.getElementById('rawFileInput');
+    const files = Array.from(input.files || []);
+    if(!files.length){ setRawStatus('올릴 파일을 선택해주세요.', true); return; }
+    const btn = document.getElementById('rawUploadBtn');
+    btn.disabled = true;
+    const profile = await fetchMyProfile();
+    let okCount = 0;
+    try{
+      for(const file of files){
+        setRawStatus('"' + file.name + '" 업로드 중... (' + (okCount+1) + '/' + files.length + ')', false);
+        await storeRawFile(file, scope, '', (profile && profile.email) || '');
+        okCount++;
+      }
+      setRawStatus(okCount + '개 파일을 저장했습니다.', false);
+      input.value = '';
+    }catch(err){
+      setRawStatus((okCount>0 ? (okCount+'개 저장 후 ') : '') + '실패했습니다: ' + (err && err.message ? err.message : err), true);
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  // "근태 자동 필터링" 탭에서 파일을 고르는 즉시(별도 버튼 없이) 원본을 그대로 같이 보관한다.
+  // 실패해도 필터링 자체(현재 화면 계산)는 계속 정상 동작해야 하므로, 오류를 던지지 않고
+  // 해당 업로드 줄의 상태 문구에만 조용히 덧붙인다.
+  async function archiveRawFile(file, sourceKind, statusEl){
+    if(!db) return;
+    const scope = reportScope(); // p_year/p_month/p_company — "근태 자동 필터링" 탭 자체의 기간 선택
+    if(!scope.year || !scope.month || !scope.company) return; // 이 시점엔 uploadsWrap이 보이므로 항상 채워져 있다
+    try{
+      const profile = await fetchMyProfile();
+      await storeRawFile(file, scope, sourceKind, (profile && profile.email) || '');
+      if(statusEl){ statusEl.innerHTML += ' · <span style="color:var(--text-muted);">원본 파일도 저장됨</span>'; }
+      subscribeRawFiles(); // "원본 데이터" 탭이 같은 기간을 보고 있었다면 방금 저장된 파일이 바로 보이게
+    }catch(err){
+      if(statusEl){ statusEl.innerHTML += ' · <span style="color:var(--critical);">원본 저장 실패: ' + (err && err.message ? err.message : err) + '</span>'; }
+    }
+  }
+
+  async function downloadRawFile(f){
+    try{
+      const { data, error } = await supabaseClient.storage.from(RAW_FILES_BUCKET).createSignedUrl(f.storagePath, 60, { download: f.fileName || true });
+      if(error) throw error;
+      const a = document.createElement('a');
+      a.href = data.signedUrl; a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+    }catch(err){
+      setRawStatus('다운로드 링크 생성 실패: ' + (err && err.message ? err.message : err), true);
+    }
+  }
+
+  async function deleteRawFile(f){
+    try{
+      await supabaseClient.storage.from(RAW_FILES_BUCKET).remove([f.storagePath]);
+      await db.doc('rawFiles/'+f.id).delete();
+    }catch(err){
+      setRawStatus('삭제 실패: ' + (err && err.message ? err.message : err), true);
+    }
+  }
+
+  function renderRawFilesTable(files){
+    const tableEl = document.getElementById('table_rawFiles');
+    tableEl.innerHTML = '';
+    if(!files.length){
+      const tb = document.createElement('tbody');
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.className = 'empty-state';
+      td.colSpan = 6;
+      td.textContent = '이 기간에 저장된 원본 파일이 없습니다.';
+      tr.appendChild(td);
+      tb.appendChild(tr);
+      tableEl.appendChild(tb);
+      return;
+    }
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    ['구분','파일명','업로드일시','업로드한 사람','용량','작업'].forEach(c=>{
+      const th = document.createElement('th');
+      th.textContent = c;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    tableEl.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    files.forEach(f=>{
+      const tr = document.createElement('tr');
+      const uploadedAtLabel = f.uploadedAt ? new Date(f.uploadedAt).toLocaleString('ko-KR') : '-';
+      [f.sourceKind || '직접 업로드', f.fileName || '-', uploadedAtLabel, f.uploadedByEmail || '-', fmtBytes(f.sizeBytes)].forEach(val=>{
+        const td = document.createElement('td');
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+      const actionTd = document.createElement('td');
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'btn'; dlBtn.type = 'button'; dlBtn.textContent = '다운로드';
+      dlBtn.addEventListener('click', ()=>downloadRawFile(f));
+      actionTd.appendChild(dlBtn);
+      const delBtn = makeConfirmButton('삭제', '정말 삭제?', ()=>deleteRawFile(f));
+      delBtn.style.marginLeft = '6px';
+      actionTd.appendChild(delBtn);
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    });
+    tableEl.appendChild(tbody);
+  }
+
+  function subscribeRawFiles(){
+    if(unsubscribeRawFiles){ unsubscribeRawFiles(); unsubscribeRawFiles = null; }
+    const scope = rawScope();
+    const labelEl = document.getElementById('rawScopeLabel');
+    if(!scope.year || !scope.month || !scope.company){
+      labelEl.textContent = '연도 · 월 · 사업장을 선택하면 나타납니다';
+      renderRawFilesTable([]);
+      return;
+    }
+    labelEl.textContent = scope.company + ' ' + scope.year + '년 ' + scope.month;
+    if(!db){ renderRawFilesTable([]); return; }
+    unsubscribeRawFiles = rawFilesQuery(scope).orderBy('uploadedAt','desc').onSnapshot(
+      snap => renderRawFilesTable(snap.docs.map(d => Object.assign({id:d.id}, d.data()))),
+      err => setRawStatus('목록을 불러오지 못했습니다: ' + err.message, true)
+    );
+  }
 
   /* ---------------- 저장 이력 조회 (별도 탭) ---------------- */
   let unsubscribeHistVersions = null;
@@ -6272,6 +6512,12 @@
   });
   subscribeHistVersions();
 
+  ['r_year','r_month','r_company'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', subscribeRawFiles);
+  });
+  subscribeRawFiles();
+  document.getElementById('rawUploadBtn').addEventListener('click', uploadRawFiles);
+
   ['s_company','s_year'].forEach(id=>{
     const el = document.getElementById(id);
     const saved = lsGet('geunte_summary_'+id, null);
@@ -6353,19 +6599,19 @@
     renderPreview(document.getElementById('preview1'), 'file1');
     renderMappingGrid(document.getElementById('mapping1Grid'), 'file1', FIELD_DEFS_1);
     renderAll();
-  });
+  }, '출퇴근 현황');
   loadFile(document.getElementById('file2Input'), 'file2', FIELD_DEFS_2, document.getElementById('file2Status'), ()=>{
     document.getElementById('mapping2Panel').style.display = 'block';
     renderPreview(document.getElementById('preview2'), 'file2');
     renderMappingGrid(document.getElementById('mapping2Grid'), 'file2', FIELD_DEFS_2);
     renderAll();
-  });
+  }, '근로시간 현황');
   loadFile(document.getElementById('file3Input'), 'file3', FIELD_DEFS_3, document.getElementById('file3Status'), ()=>{
     document.getElementById('mapping3Panel').style.display = 'block';
     renderPreview(document.getElementById('preview3'), 'file3');
     renderMappingGrid(document.getElementById('mapping3Grid'), 'file3', FIELD_DEFS_3);
     renderAll();
-  });
+  }, '인원 현황');
 
   document.getElementById('mapping1Toggle').addEventListener('click', ()=>{
     const panel = document.getElementById('mapping1Panel');
