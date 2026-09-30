@@ -96,6 +96,9 @@
     text-wrap:balance;
   }
   .tabular{ font-variant-numeric: tabular-nums; }
+  .cell-edit-input{ width:100%; min-width:64px; box-sizing:border-box; border:1px solid transparent; background:transparent; padding:2px 4px; font:inherit; color:inherit; border-radius:4px; }
+  .cell-edit-input:hover{ border-color:var(--border,#ddd); }
+  .cell-edit-input:focus{ border-color:var(--accent); background:var(--card-bg,#fff); outline:none; }
 
   a{color:var(--accent);}
 
@@ -1043,6 +1046,7 @@
     <button class="tab-btn active" data-tab="late">지각자 확인 <span class="count" id="count_late">0</span></button>
     <button class="tab-btn" data-tab="missing">출퇴근 체크 누락자 <span class="count" id="count_missing">0</span></button>
     <button class="tab-btn" data-tab="hours">의무·최대 근로시간</button>
+    <button class="tab-btn" data-tab="excluded">제외자 확인 <span class="count" id="count_excluded">0</span></button>
   </div>
 
   <!-- TAB: 지각자 확인 -->
@@ -1109,6 +1113,37 @@
       </div>
       <div class="table-wrap"><table id="table_over"></table></div>
       <div class="copybox" id="copybox_over"><textarea readonly></textarea></div>
+    </div>
+  </div>
+
+  <!-- TAB: 제외자 확인 -->
+  <div class="tab-panel" id="panel-excluded">
+    <div class="card">
+      <div class="result-header">
+        <div>
+          <div class="title">제외자 확인</div>
+          <div class="sub">지각자 · 출퇴근 체크 누락자 · 의무 근로시간 미달자 · 최대 근로시간 초과자에서 "제외" 체크한 사람만 모아서, 어느 항목에서 제외됐는지 구분해 보여줍니다. 여기서도 체크를 풀면 바로 다시 포함됩니다.</div>
+        </div>
+        <button class="btn" id="downloadExcludedBtn" type="button">엑셀 다운로드</button>
+      </div>
+      <p class="file-status" id="excludedExportStatus" style="margin-top:4px;"></p>
+    </div>
+
+    <div class="card">
+      <div class="divider-label">지각자에서 제외 (<span id="excludedCount_late">0</span>)</div>
+      <div class="table-wrap"><table id="table_excluded_late"></table></div>
+    </div>
+    <div class="card">
+      <div class="divider-label">출퇴근 체크 누락자에서 제외 (<span id="excludedCount_missing">0</span>)</div>
+      <div class="table-wrap"><table id="table_excluded_missing"></table></div>
+    </div>
+    <div class="card">
+      <div class="divider-label">의무 근로시간 미달자에서 제외 (<span id="excludedCount_under">0</span>)</div>
+      <div class="table-wrap"><table id="table_excluded_under"></table></div>
+    </div>
+    <div class="card">
+      <div class="divider-label">최대 근로시간 초과자에서 제외 (<span id="excludedCount_over">0</span>)</div>
+      <div class="table-wrap"><table id="table_excluded_over"></table></div>
     </div>
   </div>
 
@@ -1962,8 +1997,18 @@
     lateExcluded: {}, // key: name+"|"+date -> true(수동 제외) / false or undefined (지각자 집계에 포함)
     missingExcluded: {}, // key: name+"|"+date -> true(수동 제외) / false or undefined (출퇴근 누락자 집계에 포함)
     underExcluded: {}, // key: name+"|"+연월 -> true(수동 제외) / false or undefined (의무근로시간 미달자 집계에 포함)
-    overExcluded: {} // key: name+"|"+연월 -> true(수동 제외) / false or undefined (최대근로시간 초과자 집계에 포함)
+    overExcluded: {}, // key: name+"|"+연월 -> true(수동 제외) / false or undefined (최대근로시간 초과자 집계에 포함)
+    fieldOverrides: {} // key -> {성명?, 부서?, 사업부?} — 직접 수정한 값(2026-09-28 신규). 파일을 다시 불러와도, 다른 체크박스를
+                        // 눌러 다시 계산해도 이 값으로 덮어써진 채로 유지된다(저장하기 전까지는 세션 안에서만).
   };
+
+  // 지각자·출퇴근 체크 누락자·의무/최대 근로시간 결과 행에 성명·부서·사업부 직접 수정값이 있으면 덮어쓴다.
+  // row.key는 원본 파일의 원래 이름으로 만들어지므로, 이름을 고쳐도 같은 레코드를 계속 찾아갈 수 있다.
+  function applyFieldOverride(row){
+    const ov = state.fieldOverrides[row.key];
+    if(ov){ Object.keys(ov).forEach(k=>{ if(k in row) row[k] = ov[k]; }); }
+    return row;
+  }
 
   const FIELD_DEFS_1 = [
     {key:'name', label:'성명 / 사번', required:true, guess:['성명','이름','사번','name']},
@@ -2389,11 +2434,13 @@
       row._dow = r.date.getDay();
       // 표에는 안 보이지만, 저장할 때 같이 담아둬서 메일 발송 때 인원 현황을 다시 안 올려도 되게 한다.
       row._email = r.email || '';
-      return row;
+      return applyFieldOverride(row);
     });
   }
 
   /* ---------------- compute: 출퇴근 체크 누락자 ---------------- */
+  // 근로일 · 평일이고 부재가 없는데, 출근·퇴근 기록 중 하나라도 없으면(둘 다 없는 경우 포함) 누락자로 본다
+  // (2026-09-28: 기존엔 퇴근 기록만 없는 경우만 잡았는데, 출근 기록만 없거나 둘 다 없는 경우도 포함하도록 확장).
   function computeMissing(rows, params){
     return rows.filter(r=>{
       if(isExcludedEmployStatus(r.employStatus)) return false; // 퇴직·휴직자 자동 제외
@@ -2401,15 +2448,15 @@
       if(!isWeekday(r.date)) return false;
       if(r.leaveMinutes >= params.excludeLeaveMinutes) return false;
       if(params.excludeAlways.some(ex => r.name.includes(ex))) return false;
-      if(r.checkinMin === null) return false; // 출근 기록조차 없는 날은 "체크 누락"이 아니라 다른 사유일 가능성이 높아 제외
-      return r.checkoutMin === null;
+      return r.checkinMin === null || r.checkoutMin === null;
     }).map(r=>{
       const row = { key: r.name+'|'+fmtDate(r.date), 성명:r.name, 부서:r.dept };
       if(r.orgUnit !== undefined) row.사업부 = r.orgUnit;
       row.근무일 = fmtDate(r.date);
-      row.출근시각 = minutesToHHMM(r.checkinMin);
-      row.퇴근시각 = '기록 없음';
-      return row;
+      row.출근시각 = r.checkinMin === null ? '기록 없음' : minutesToHHMM(r.checkinMin);
+      row.퇴근시각 = r.checkoutMin === null ? '기록 없음' : minutesToHHMM(r.checkoutMin);
+      row.구분 = (r.checkinMin === null && r.checkoutMin === null) ? '출퇴근 전체 누락' : (r.checkinMin === null ? '출근 기록 누락' : '퇴근 기록 누락');
+      return applyFieldOverride(row);
     });
   }
 
@@ -2432,7 +2479,7 @@
         if(r.orgUnit !== undefined) row.사업부 = r.orgUnit;
         row.근무일 = fmtDate(r.date);
         const threshold = restThresholdForRow(r, params);
-        row.휴게시간 = r.restMinutes+'분';
+        row.휴게시간 = minutesToHHMM(r.restMinutes); // 2026-09-28: "75분"처럼 분 단위로만 표기하던 것을 "01:15" 시:분 형식으로 변경
         row.excessMinutes = Math.max(0, r.restMinutes - threshold);
         return row;
       });
@@ -2567,7 +2614,7 @@
           row.미달시간 = hoursToHHMM(params.minHours - adjusted);
           // 이번 기준 대상 기간(연·월)에 입사한 사람이면 "입사월"이라고 표기해둔다.
           row.비고 = isHireMonth(nameHireMap[r.name]) ? '입사월' : '';
-          under.push(row);
+          under.push(applyFieldOverride(row));
         }
       });
     }
@@ -2588,6 +2635,7 @@
           row.기준 = hoursToHHMM(params.maxHours);
           row.초과시간 = hoursToHHMM(adjusted - params.maxHours);
           row.비고 = '';
+          applyFieldOverride(row);
           over.push(row);
         }
       });
@@ -2618,7 +2666,11 @@
   const GROUP_LEAD_COLS = ['성명','부서'];
 
   // 시간·날짜처럼 숫자가 오른쪽 정렬/고정폭으로 보이면 좋은 열들.
-  const TABULAR_COLS = new Set(['근무일','연월','지각시간','실근로시간','과다휴게보정','보정후합계','기준','미달시간','평일근로시간','초과시간']);
+  const TABULAR_COLS = new Set(['근무일','연월','지각시간','실근로시간','과다휴게보정','보정후합계','기준','미달시간','평일근로시간','초과시간','휴게시간']);
+
+  // 지각자·출퇴근 체크 누락자·의무/최대 근로시간 표에서 사용자가 직접 고쳐 쓸 수 있게 허용하는 열
+  // (2026-09-28 신규 — AI/자동 매칭이 잘못 분류했을 수 있는 성명·부서·사업부만 대상).
+  const EDITABLE_PERSON_COLS = new Set(['성명','부서','사업부']);
 
   // 사업부 섹션 정렬 우선순위. 목록에 없는 값(CISO 등 원본 표기가 남은 경우)은 뒤쪽에, 매칭 안 된 사람은 맨 뒤에 배치한다.
   // (2026-09-14) CISO는 더 이상 이 여섯 개 우선순위 사업부에 포함하지 않는다 — 리니 님 요청.
@@ -2681,7 +2733,9 @@
       return;
     }
     const orgActive = ('사업부' in rows[0]);
-    const allCols = Object.keys(rows[0]).filter(k=>k!=='key' && k!=='excessMinutes' && k!=='사업부' && !k.startsWith('_'));
+    // 2026-09-28: 사업부를 더 이상 열 목록에서 빼지 않는다 — 사업부 섹션(접이식 헤더)으로도 여전히 묶어서 보여주지만,
+    // 각 행에도 실제 값을 노출해야 EDITABLE_PERSON_COLS로 직접 수정할 수 있다.
+    const allCols = Object.keys(rows[0]).filter(k=>k!=='key' && k!=='excessMinutes' && !k.startsWith('_'));
     const leadCols = GROUP_LEAD_COLS.filter(c=>allCols.includes(c));
     const detailCols = allCols.filter(c=>!leadCols.includes(c));
     const showCount = !opts.flat;
@@ -2716,18 +2770,53 @@
       return td;
     }
 
-    // 데이터 행을 만든다. leadingCells가 실제 값이면 성명/부서/건수 칸에, 빈 문자열이면 빈 칸으로 채운다.
-    function makeDataRow(row, leadingCells){
+    // 성명·부서·사업부처럼 직접 고쳐 쓸 수 있게 허용된 열(opts.editableCols)은 텍스트 대신 입력칸으로 그린다.
+    // 값을 바꾸고 포커스를 벗어나면(change) state.fieldOverrides에 저장하고 전체를 다시 계산한다.
+    function renderEditableCell(td, colName, value, row){
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'cell-edit-input';
+      input.value = (value === undefined || value === null) ? '' : value;
+      input.addEventListener('click', e=>e.stopPropagation());
+      input.addEventListener('change', ()=>{
+        const newVal = input.value.trim();
+        if(newVal === String(value === undefined || value === null ? '' : value)) return;
+        state.fieldOverrides[row.key] = state.fieldOverrides[row.key] || {};
+        state.fieldOverrides[row.key][colName] = newVal;
+        renderAll();
+      });
+      td.appendChild(input);
+    }
+
+    // 데이터 행을 만든다. useBlankLead가 true면(사람이 여러 건이라 펼쳐진 하위 행) 성명·부서 칸을 비워서
+    // 들여쓴 것처럼 보이게 하고, false면 실제 값을(수정 가능한 열이면 입력칸으로) 채운다.
+    // countLabel은 showCount일 때만 "건수" 칸에 들어간다("1건" / "" / 그룹 헤더의 "N건" 등).
+    function makeDataRow(row, useBlankLead, countLabel){
       const tr = document.createElement('tr');
-      leadingCells.forEach(v=>{
+      leadCols.forEach(c=>{
         const td = document.createElement('td');
-        td.textContent = v;
+        if(useBlankLead){
+          td.textContent = '';
+        } else if(opts.editableCols && opts.editableCols.has(c)){
+          renderEditableCell(td, c, row[c], row);
+        } else {
+          td.textContent = row[c];
+        }
         tr.appendChild(td);
       });
+      if(showCount){
+        const td = document.createElement('td');
+        td.textContent = countLabel || '';
+        tr.appendChild(td);
+      }
       detailCols.forEach(c=>{
         const td = document.createElement('td');
         if(TABULAR_COLS.has(c)) td.className='tabular';
-        applyCellContent(td, c, row[c], opts);
+        if(opts.editableCols && opts.editableCols.has(c)){
+          renderEditableCell(td, c, row[c], row);
+        } else {
+          applyCellContent(td, c, row[c], opts);
+        }
         tr.appendChild(td);
       });
       if(opts.checkbox){ tr.appendChild(makeCheckboxCell(row)); }
@@ -2740,7 +2829,7 @@
       if(!showCount){
         // 의무·최대 근로시간처럼 한 사람당 한 줄만 있는 결과는 토글 없이 평평하게 보여준다.
         rowsSubset.forEach(row=>{
-          const tr = makeDataRow(row, leadCols.map(c=>row[c]));
+          const tr = makeDataRow(row, false);
           if(tagOrgChild) tr.classList.add('org-child');
           trs.push(tr);
         });
@@ -2749,12 +2838,10 @@
       if(!groupOpenState[stateKey]) groupOpenState[stateKey] = new Set();
       const openSet = groupOpenState[stateKey];
       const groups = groupByPerson(rowsSubset);
-      const emptyLead = leadCols.map(()=>'');
 
       groups.forEach(g=>{
-        const leadValues = leadCols.map(c=>g[c]);
         if(g.items.length === 1){
-          const tr = makeDataRow(g.items[0], leadValues.concat(['1건']));
+          const tr = makeDataRow(g.items[0], false, '1건');
           if(tagOrgChild) tr.classList.add('org-child');
           trs.push(tr);
           return;
@@ -2782,7 +2869,7 @@
         // 상세 행들은 같은 테이블의 같은 열 구조를 그대로 쓰는 일반 <tr>이라
         // 헤더(근무일·출근시각 등)와 열이 항상 맞는다. 리딩 칸(성명/부서)·건수 칸만 비워서 들여쓴 것처럼 보이게 한다.
         const detailRows = g.items.map(row=>{
-          const tr = makeDataRow(row, emptyLead.concat(['']));
+          const tr = makeDataRow(row, true, '');
           tr.classList.add('detail-row');
           if(tagOrgChild) tr.classList.add('org-child');
           trs.push(tr);
@@ -2945,19 +3032,22 @@
       checkboxLabel: '제외',
       isChecked: isLateExcluded,
       onCheck: (r, v) => { state.lateExcluded[r.key] = v; renderMainTabs(); },
-      groupSumCol: '지각시간'
+      groupSumCol: '지각시간',
+      editableCols: EDITABLE_PERSON_COLS
     });
     renderGroupedTable(document.getElementById('table_missing'), missingAll, {
       checkbox: true,
       checkboxLabel: '제외',
       isChecked: isMissingExcluded,
-      onCheck: (r, v) => { state.missingExcluded[r.key] = v; renderMainTabs(); }
+      onCheck: (r, v) => { state.missingExcluded[r.key] = v; renderMainTabs(); },
+      editableCols: EDITABLE_PERSON_COLS
     });
 
     document.getElementById('count_late').textContent = currentResults.late.length;
     document.getElementById('count_missing').textContent = currentResults.missing.length;
 
     renderDiagnostics(f1, params);
+    renderExcludedTab();
   }
 
   function renderDiagnostics(f1, params){
@@ -3015,7 +3105,8 @@
       checkboxLabel: '제외',
       isChecked: isUnderExcluded,
       onCheck: (r, v) => { state.underExcluded[r.key] = v; renderHoursTab(); },
-      emptyText: params.minHours ? '미달자가 없습니다.' : '왼쪽 "월 의무 근로시간 기준"을 입력하면 계산됩니다.'
+      emptyText: params.minHours ? '미달자가 없습니다.' : '왼쪽 "월 의무 근로시간 기준"을 입력하면 계산됩니다.',
+      editableCols: EDITABLE_PERSON_COLS
     });
     renderGroupedTable(document.getElementById('table_over'), over, {
       flat:true,
@@ -3023,8 +3114,109 @@
       checkboxLabel: '제외',
       isChecked: isOverExcluded,
       onCheck: (r, v) => { state.overExcluded[r.key] = v; renderHoursTab(); },
-      emptyText: params.maxHours ? '초과자가 없습니다.' : '왼쪽 "월 최대 근로시간 기준"을 입력하면 계산됩니다.'
+      emptyText: params.maxHours ? '초과자가 없습니다.' : '왼쪽 "월 최대 근로시간 기준"을 입력하면 계산됩니다.',
+      editableCols: EDITABLE_PERSON_COLS
     });
+    renderExcludedTab();
+  }
+
+  /* ---------------- 제외자 확인 (2026-09-28 신규) ----------------
+     지각자·출퇴근 체크 누락자·의무/최대 근로시간에서 "제외" 체크된 사람만 한곳에 모아 보여준다.
+     currentResults.lateAll/missingAll/underAll/overAll(제외 여부와 무관하게 전체)에서 다시 걸러내는
+     것이라 renderMainTabs()/renderHoursTab() 둘 다 최소 한 번은 돈 뒤에만 정확하다 — renderAll()이
+     둘 다 부팅 시 호출하므로 이후로는 항상 보장된다. */
+  function renderExcludedTab(){
+    const excludedLate = (currentResults.lateAll||[]).filter(isLateExcluded);
+    const excludedMissing = (currentResults.missingAll||[]).filter(isMissingExcluded);
+    const excludedUnder = (currentResults.underAll||[]).filter(isUnderExcluded);
+    const excludedOver = (currentResults.overAll||[]).filter(isOverExcluded);
+
+    renderGroupedTable(document.getElementById('table_excluded_late'), excludedLate, {
+      checkbox: true,
+      checkboxLabel: '제외됨 (체크 해제하면 다시 포함)',
+      isChecked: isLateExcluded,
+      onCheck: (r, v) => { state.lateExcluded[r.key] = v; renderMainTabs(); },
+      groupSumCol: '지각시간',
+      editableCols: EDITABLE_PERSON_COLS,
+      emptyText: '지각자에서 제외된 사람이 없습니다.'
+    });
+    renderGroupedTable(document.getElementById('table_excluded_missing'), excludedMissing, {
+      checkbox: true,
+      checkboxLabel: '제외됨 (체크 해제하면 다시 포함)',
+      isChecked: isMissingExcluded,
+      onCheck: (r, v) => { state.missingExcluded[r.key] = v; renderMainTabs(); },
+      editableCols: EDITABLE_PERSON_COLS,
+      emptyText: '출퇴근 체크 누락자에서 제외된 사람이 없습니다.'
+    });
+    renderGroupedTable(document.getElementById('table_excluded_under'), excludedUnder, {
+      flat: true,
+      checkbox: true,
+      checkboxLabel: '제외됨 (체크 해제하면 다시 포함)',
+      isChecked: isUnderExcluded,
+      onCheck: (r, v) => { state.underExcluded[r.key] = v; renderHoursTab(); },
+      editableCols: EDITABLE_PERSON_COLS,
+      emptyText: '의무 근로시간 미달자에서 제외된 사람이 없습니다.'
+    });
+    renderGroupedTable(document.getElementById('table_excluded_over'), excludedOver, {
+      flat: true,
+      checkbox: true,
+      checkboxLabel: '제외됨 (체크 해제하면 다시 포함)',
+      isChecked: isOverExcluded,
+      onCheck: (r, v) => { state.overExcluded[r.key] = v; renderHoursTab(); },
+      editableCols: EDITABLE_PERSON_COLS,
+      emptyText: '최대 근로시간 초과자에서 제외된 사람이 없습니다.'
+    });
+
+    document.getElementById('excludedCount_late').textContent = excludedLate.length;
+    document.getElementById('excludedCount_missing').textContent = excludedMissing.length;
+    document.getElementById('excludedCount_under').textContent = excludedUnder.length;
+    document.getElementById('excludedCount_over').textContent = excludedOver.length;
+    document.getElementById('count_excluded').textContent = excludedLate.length + excludedMissing.length + excludedUnder.length + excludedOver.length;
+  }
+
+  function setExcludedExportStatus(msg, isError){
+    const el = document.getElementById('excludedExportStatus');
+    el.textContent = msg;
+    el.style.color = isError ? 'var(--critical)' : 'var(--text-muted)';
+  }
+
+  async function downloadExcludedExcel(){
+    if(!downloadsCap){ setExcludedExportStatus('이 화면에서는 파일 다운로드 기능을 쓸 수 없어요.', true); return; }
+    const btn = document.getElementById('downloadExcludedBtn');
+    btn.disabled = true;
+    setExcludedExportStatus('엑셀 파일을 만드는 중...', false);
+    try{
+      const sections = [
+        {title:'지각자 제외', rows: sortRowsForExport((currentResults.lateAll||[]).filter(isLateExcluded)), columns: EXPORT_COLUMNS.late},
+        {title:'출퇴근누락 제외', rows: sortRowsForExport((currentResults.missingAll||[]).filter(isMissingExcluded)), columns: EXPORT_COLUMNS.missing},
+        {title:'의무근로 미달 제외', rows: sortRowsForExport((currentResults.underAll||[]).filter(isUnderExcluded)), columns: EXPORT_COLUMNS.under},
+        {title:'최대근로 초과 제외', rows: sortRowsForExport((currentResults.overAll||[]).filter(isOverExcluded)), columns: EXPORT_COLUMNS.over}
+      ];
+      const wb = XLSX.utils.book_new();
+      sections.forEach(sec=>{
+        const cols = pickExportColumns(sec.rows, sec.columns);
+        const aoa = [];
+        if(!sec.rows.length){
+          aoa.push(['제외된 대상자가 없습니다.']);
+        } else {
+          aoa.push(cols);
+          sec.rows.forEach(r=> aoa.push(cols.map(c=>r[c])));
+        }
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        XLSX.utils.book_append_sheet(wb, ws, sec.title.slice(0,31));
+      });
+      const arrBuf = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+      const blob = new Blob([arrBuf], {type:'application/octet-stream'});
+      const scope = reportScope();
+      const filenameParts = [scope.year, scope.month, scope.company, '제외자'].filter(Boolean);
+      const filename = (filenameParts.join('_').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'') || 'geunte_제외자') + '.xlsx';
+      const result = await downloadsCap.save({filename, data: blob});
+      setExcludedExportStatus(result.status === 'saved' ? '엑셀 파일을 저장했습니다.' : '엑셀 파일을 전달했습니다.', false);
+    }catch(err){
+      setExcludedExportStatus(describeDownloadError(err), true);
+    }finally{
+      btn.disabled = false;
+    }
   }
 
   function renderAll(){
@@ -3315,19 +3507,56 @@
     return (n/1024/1024).toFixed(1) + ' MB';
   }
 
+  // Supabase 오류 객체는 케이스마다 message/error/details/hint/statusCode 등 실린 필드가 달라서,
+  // 있는 대로 최대한 모아 보여준다 — "원본 저장 실패"만 뜨고 원인을 못 찾는 문제를 줄이기 위함
+  // (2026-09-28). 가장 흔한 원인은 raw_files_schema.sql을 아직 실행하지 않아 버킷/테이블 자체가
+  // 없는 경우("Bucket not found" 류 메시지)다.
+  function describeSupabaseError(err){
+    if(!err) return '알 수 없는 오류';
+    const parts = [];
+    const msg = err.message || err.error_description || err.error || '';
+    if(msg) parts.push(msg);
+    if(err.details && err.details !== msg) parts.push(err.details);
+    if(err.hint) parts.push('힌트: ' + err.hint);
+    if(err.statusCode) parts.push('상태코드 ' + err.statusCode);
+    if(err.code) parts.push('code=' + err.code);
+    return parts.length ? parts.join(' / ') : String(err);
+  }
+
+  // 회사명·월 같은 한글/특수문자를 Storage 오브젝트 경로에 직접 쓰지 않도록, 영문 슬러그로
+  // 바꿔서 써넣는다(2026-09-28) — 실제 원인은 아직 확인 전이지만, 오브젝트 키에 한글·괄호가
+  // 들어가서 생길 수 있는 인코딩 문제 자체를 없애기 위한 안전장치. 회사·연·월 등 사람이 보는
+  // 정보는 그대로 geunte_raw_files 테이블에 남으므로 조회·필터링에는 영향이 없다.
+  function companySlug(company){
+    if(company === '몰테일 한국법인') return 'molteil';
+    if(company === '(주)커넥트웨이브') return 'cowave';
+    return 'company';
+  }
+  function monthSlug(month){
+    const n = parseInt(month, 10);
+    return n ? String(n).padStart(2,'0') : '00';
+  }
+
   // 실제 업로드+메타데이터 기록 로직 — "원본 데이터" 탭의 수동 업로드(uploadRawFiles)와
   // "근태 자동 필터링" 탭의 자동 보관(archiveRawFile)이 공통으로 쓴다.
   async function storeRawFile(file, scope, sourceKind, uploaderEmail){
     const randomKey = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now());
-    const path = scope.company + '/' + scope.year + '/' + scope.month + '/' + randomKey;
+    const path = companySlug(scope.company) + '/' + scope.year + '/' + monthSlug(scope.month) + '/' + randomKey;
     const { error: upErr } = await supabaseClient.storage.from(RAW_FILES_BUCKET).upload(path, file, { contentType: file.type || 'application/octet-stream' });
     if(upErr) throw upErr;
-    await db.collection('rawFiles').add({
-      company: scope.company, year: scope.year, month: scope.month,
-      fileName: file.name, storagePath: path, sizeBytes: file.size,
-      contentType: file.type || '', uploadedByEmail: uploaderEmail || '',
-      sourceKind: sourceKind || ''
-    });
+    try{
+      await db.collection('rawFiles').add({
+        company: scope.company, year: scope.year, month: scope.month,
+        fileName: file.name, storagePath: path, sizeBytes: file.size,
+        contentType: file.type || '', uploadedByEmail: uploaderEmail || '',
+        sourceKind: sourceKind || ''
+      });
+    }catch(dbErr){
+      // 파일은 이미 Storage에 올라갔는데 메타데이터 기록만 실패한 경우, 목록에 안 뜨는 고아
+      // 파일이 남지 않도록 방금 올린 파일을 지운다.
+      await supabaseClient.storage.from(RAW_FILES_BUCKET).remove([path]).catch(()=>{});
+      throw dbErr;
+    }
   }
 
   async function uploadRawFiles(){
@@ -3350,7 +3579,7 @@
       setRawStatus(okCount + '개 파일을 저장했습니다.', false);
       input.value = '';
     }catch(err){
-      setRawStatus((okCount>0 ? (okCount+'개 저장 후 ') : '') + '실패했습니다: ' + (err && err.message ? err.message : err), true);
+      setRawStatus((okCount>0 ? (okCount+'개 저장 후 ') : '') + '실패했습니다: ' + describeSupabaseError(err), true);
     }finally{
       btn.disabled = false;
     }
@@ -3369,7 +3598,7 @@
       if(statusEl){ statusEl.innerHTML += ' · <span style="color:var(--text-muted);">원본 파일도 저장됨</span>'; }
       subscribeRawFiles(); // "원본 데이터" 탭이 같은 기간을 보고 있었다면 방금 저장된 파일이 바로 보이게
     }catch(err){
-      if(statusEl){ statusEl.innerHTML += ' · <span style="color:var(--critical);">원본 저장 실패: ' + (err && err.message ? err.message : err) + '</span>'; }
+      if(statusEl){ statusEl.innerHTML += ' · <span style="color:var(--critical);">원본 저장 실패: ' + describeSupabaseError(err) + '</span>'; }
     }
   }
 
@@ -5994,7 +6223,7 @@
   // 엑셀·PDF 내보내기 전용 열 순서/선택 (화면 표시용 renderGroupedTable과는 별개).
   const EXPORT_COLUMNS = {
     late: ['사업부','부서','성명','근무일','출근시각','퇴근시각','부재','지각시간','비고'],
-    missing: ['사업부','부서','성명','근무일','출근시각','퇴근시각'],
+    missing: ['사업부','부서','성명','근무일','출근시각','퇴근시각','구분'],
     under: ['연월','사업부','성명','실근로시간','보정후합계','미달시간','비고'],
     over: ['사업부','성명','평일근로시간','보정후합계','초과시간']
   };
@@ -6691,6 +6920,7 @@
   setupCopy('copyBtn_missing','copybox_missing', ()=>currentResults.missing);
   setupCopy('copyBtn_under','copybox_under', ()=>currentResults.under);
   setupCopy('copyBtn_over','copybox_over', ()=>currentResults.over);
+  document.getElementById('downloadExcludedBtn').addEventListener('click', downloadExcludedExcel);
 
   renderAll();
   // initDb()/initDownloads()/initSample()은 더 이상 여기서 바로 실행하지 않는다 —
