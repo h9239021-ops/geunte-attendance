@@ -686,6 +686,16 @@
     color:var(--text-muted);
     margin-top:2px;
   }
+  .result-header .sub-list{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin:4px 0 0;
+    padding-left:18px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .result-header .sub-list li{ margin:0; }
 
   .table-wrap{
     overflow-x:auto;
@@ -929,7 +939,7 @@
   <!-- 의무·최대 근로시간 산정 기준값 (기간 선택 바로 아래로 이동) -->
   <div class="card" id="hoursParamsCard">
     <h2><span class="step-num">2</span>기준 시간 및 제외 대상 <span style="font-weight:400;color:var(--muted);font-size:13px;">(의무·최대 근로시간 판정용)</span></h2>
-    <p class="hint">"의무·최대 근로시간" 탭의 미달자·초과자 판정에 쓰이는 기준값입니다. 브라우저에 저장되어 다음에 열 때도 유지됩니다.</p>
+    <p class="hint">"의무·최대 근로시간" 탭의 미달자·초과자 판정에 쓰이는 기준값입니다. 브라우저에 저장되어 다음에 열 때도 유지됩니다. 단시간 근로자처럼 사람마다 의무 근로시간 기준이 다른 경우는 여기서 일괄 설정하지 말고, "인원 현황 업로드"에 그 사람의 월 기준시간을 같이 적어 올려주세요 — 그 사람만 개인 기준으로 판단하고 비고에 "단시간"이라고 표시됩니다.</p>
     <div class="params-grid">
       <div class="field">
         <label>월 의무 근로시간 기준 (시간)</label>
@@ -993,7 +1003,7 @@
     <!-- Optional upload: 인원 현황 (사업부 매칭용) -->
     <div class="card" id="uploadCard3">
       <h2><span class="step-num">5</span>인원 현황 업로드 <span style="font-weight:400;color:var(--muted);font-size:13px;">(선택 — 사업부 표기용)</span></h2>
-      <p class="hint">매월 마지막일 기준 인원 현황 파일입니다. 올리면 사람마다 팀을 사업부(CC사업부, CC CTO, 커넥트웨이브HQ, 메이크샵사업부(MS), 플레이오토사업부(PA), 스윗트래커사업부(ST))와 매칭해서 결과 표에 함께 표시해드려요. 올리지 않아도 나머지 기능은 그대로 동작합니다.</p>
+      <p class="hint">매월 마지막일 기준 인원 현황 파일입니다. 올리면 사람마다 팀을 사업부(CC사업부, CC CTO, 커넥트웨이브HQ, 메이크샵사업부(MS), 플레이오토사업부(PA), 스윗트래커사업부(ST))와 매칭해서 결과 표에 함께 표시해드려요. "재직 상태"에 "휴직"·"퇴직"이라고 적힌 사람은 모든 결과에 비고로 표시되고 "제외"가 기본 체크되며(체크 해제하면 다시 포함), "단시간 근로자 월 기준시간"을 같이 적으면 그 사람만 그 시간을 의무 근로시간 기준으로 씁니다. 올리지 않아도 나머지 기능은 그대로 동작합니다.</p>
       <div class="upload-row">
         <label class="file-btn">
           파일 선택
@@ -1055,7 +1065,13 @@
       <div class="result-header">
         <div>
           <div class="title">지각자 확인 결과</div>
-          <div class="sub">근로일 중 기준 시각(<span id="lateTimeLabel">10:00</span>) 이후 출근자를 모두 뽑았습니다. "부재" 열은 그 날 상신된 연차·부재 시간이며(출근·퇴근 어느 쪽에 걸렸는지는 출근시각·퇴근시각을 같이 보고 판단), "지각시간" 열은 기준 시각(부재 2시간이면 13:00, 4시간이면 14:00으로 늦춰서 계산) 이후 얼마나 늦었는지입니다. 월~목요일은 그 늦춰진 기준 시각 이내 출근이면 "제외"가 기본 체크되고, 그 시각을 넘겼거나 금요일 부재는 정책에 따라 다르게 기본값이 정해집니다(금요일은 부재가 있으면 항상 기본 체크) — 확인 후 필요하면 직접 체크를 바꿔주세요. 사업부 &gt; 부서 &gt; 성명순으로 정렬되고, 한 사람이 여러 건이면 펼치기 전에 그 달 지각시간 누적 합계가 표시됩니다.</div>
+          <ul class="sub-list">
+            <li>근로일 중 기준 시각(<span id="lateTimeLabel">10:00</span>) 이후 출근자를 모두 뽑았습니다.</li>
+            <li>"부재" 열은 그 날 상신된 연차·부재 시간이며, 출근·퇴근 어느 쪽에 걸렸는지는 출근시각·퇴근시각을 같이 보고 판단합니다.</li>
+            <li>"지각시간" 열은 기준 시각(부재 2시간이면 13:00, 4시간이면 14:00으로 늦춰서 계산) 이후 얼마나 늦었는지입니다.</li>
+            <li>월~목요일은 그 늦춰진 기준 시각 이내 출근이면 "제외"가 기본 체크되고, 그 시각을 넘겼거나 금요일 부재는 정책에 따라 다르게 기본값이 정해집니다(금요일은 부재가 있으면 항상 기본 체크) — 확인 후 필요하면 직접 체크를 바꿔주세요.</li>
+            <li>사업부 &gt; 부서 &gt; 성명순으로 정렬되고, 한 사람이 여러 건이면 펼치기 전에 그 달 지각시간 누적 합계가 표시됩니다.</li>
+          </ul>
         </div>
         <button class="btn" id="copyBtn_late" type="button">결과 복사</button>
       </div>
@@ -1070,7 +1086,12 @@
       <div class="result-header">
         <div>
           <div class="title">출퇴근 체크 누락자 확인 결과</div>
-          <div class="sub">근로일 · 평일 · 퇴근 기록 없음 기준이며, 6·8시간 연차 사용자와 지정한 제외 대상은 뺐습니다. 이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요 (기본은 미체크 = 결과에 포함).</div>
+          <ul class="sub-list">
+            <li>근로일 · 평일 기준으로, 출근 기록이 없거나 퇴근 기록이 없거나 둘 다 없는 사람을 모두 뽑았습니다.</li>
+            <li>6·8시간 연차 사용자와 지정한 제외 대상은 뺐습니다.</li>
+            <li>이번 기간 입사자는 "입사월", 휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다.</li>
+            <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
+          </ul>
         </div>
         <button class="btn" id="copyBtn_missing" type="button">결과 복사</button>
       </div>
@@ -1095,7 +1116,12 @@
       <div class="result-header">
         <div>
           <div class="title">의무 근로시간 미달자</div>
-          <div class="sub">근로시간 현황 실근로시간 + 과다 휴게시간 보정 &lt; 의무 기준. 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요 (기본은 미체크 = 결과에 포함).</div>
+          <ul class="sub-list">
+            <li>근로시간 현황 실근로시간 + 과다 휴게시간 보정 &lt; 의무 기준인 사람을 뽑았습니다.</li>
+            <li>인원 현황에 "단시간 근로자 월 기준시간"을 올린 사람은 그 사람만 이 개인별 기준시간으로 판단하고, 비고에 "단시간"이라고 표시됩니다.</li>
+            <li>이번 기간 입사자는 "입사월", 휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다.</li>
+            <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
+          </ul>
         </div>
         <button class="btn" id="copyBtn_under" type="button">결과 복사</button>
       </div>
@@ -1107,7 +1133,11 @@
       <div class="result-header">
         <div>
           <div class="title">최대 근로시간 초과자</div>
-          <div class="sub">출퇴근 현황 기준 평일(토요일 제외) 근로시간 + 과다 휴게시간 보정 &gt; 최대 기준. 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요 (기본은 미체크 = 결과에 포함).</div>
+          <ul class="sub-list">
+            <li>출퇴근 현황 기준 평일(토요일 제외) 근로시간 + 과다 휴게시간 보정 &gt; 최대 기준인 사람을 뽑았습니다.</li>
+            <li>휴직·퇴직자는 비고에 표시되고 "제외"가 기본 체크됩니다.</li>
+            <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
+          </ul>
         </div>
         <button class="btn" id="copyBtn_over" type="button">결과 복사</button>
       </div>
@@ -2032,8 +2062,9 @@
     {key:'name', label:'성명', required:true, guess:['성명','이름','name']},
     {key:'saupbu', label:'사업부', required:true, guess:['사업부']},
     {key:'bumun', label:'부문 (선택 — 사업부 값이 비어있을 때만 대신 사용)', required:false, guess:['부문']},
-    {key:'employStatus', label:'재직 상태 (선택 — "퇴직"·"휴직"인 사람을 결과에서 자동 제외)', required:false, guess:['재직상태','재직 상태','재직여부','상태']},
-    {key:'hireDate', label:'입사일 (선택 — 기준 대상 기간에 입사한 사람을 "입사월"로 표기)', required:false, guess:['입사일','입사날짜','입사연월일','입사']}
+    {key:'employStatus', label:'재직 상태 (선택 — "퇴직"·"휴직"인 사람은 결과 목록에 비고로 표시되고 "제외"가 기본으로 체크됩니다)', required:false, guess:['재직상태','재직 상태','재직여부','상태']},
+    {key:'hireDate', label:'입사일 (선택 — 기준 대상 기간에 입사한 사람을 "입사월"로 표기)', required:false, guess:['입사일','입사날짜','입사연월일','입사']},
+    {key:'standardHours', label:'단시간 근로자 월 기준시간 (선택 — 값이 있으면 이 사람만 의무 근로시간 판정 기준으로 이 시간을 쓰고, 비고에 "단시간"으로 표기)', required:false, guess:['기준시간','월기준시간','단시간기준시간','단시간 기준시간']}
   ];
 
   /* ---------------- parsing helpers ---------------- */
@@ -2296,13 +2327,22 @@
       const label = orgUnitLabel(mv(r, s.mapping, 'saupbu'), mv(r, s.mapping, 'bumun'));
       const employStatus = String(mv(r, s.mapping, 'employStatus') || '').trim();
       const hireDate = parseDateCell(mv(r, s.mapping, 'hireDate'));
-      return { loginId, name, 사업부: label, employStatus, hireDate };
+      const standardHours = parseDurationHours(mv(r, s.mapping, 'standardHours')) || 0;
+      return { loginId, name, 사업부: label, employStatus, hireDate, standardHours };
     }).filter(r => r.name);
   }
 
-  // "퇴직"·"휴직"으로 표기된 사람만 자동 제외 대상으로 본다 (그 외 값, 예: "재직"은 제외하지 않음).
+  // "퇴직"·"휴직"으로 표기된 사람만 대상으로 본다 (그 외 값, 예: "재직"은 해당 없음).
+  // 2026-09-30: 이전엔 이 사람들을 결과에서 통째로 걸러냈는데(안 보임), 이제는 결과 목록에 그대로 두고
+  // 비고에 표시 + "제외" 체크만 기본으로 켜두는 방식으로 바꿨다(담당자가 확인 후 체크 해제하면 다시 포함됨).
   function isExcludedEmployStatus(status){
     return status === '퇴직' || status === '휴직';
+  }
+  // 재직 상태에 따른 비고 표시 텍스트. computeLate/computeMissing/computeUnderOver가 공통으로 쓴다.
+  function employStatusNote(status){
+    if(status === '휴직') return '휴직';
+    if(status === '퇴직') return '퇴직';
+    return '';
   }
 
   // 인원 현황 파일(file3) 한 행을 로그인 아이디·성명 두 키로 모두 찾을 수 있게 묶어둔 조회표.
@@ -2313,7 +2353,7 @@
     const byName = {};
     if(!orgUnitActive()) return {byLogin, byName};
     normalizeFile3().forEach(r=>{
-      const info = { 사업부: r.사업부, email: r.loginId || '', employStatus: r.employStatus || '', hireDate: r.hireDate || null };
+      const info = { 사업부: r.사업부, email: r.loginId || '', employStatus: r.employStatus || '', hireDate: r.hireDate || null, standardHours: r.standardHours || 0 };
       if(r.loginId) byLogin[r.loginId.toLowerCase()] = info;
       if(r.name) byName[r.name] = info;
     });
@@ -2344,6 +2384,11 @@
   function lookupHireDate(lookup, loginId, name){
     const info = lookupFile3Info(lookup, loginId, name);
     return (info && info.hireDate) || null;
+  }
+
+  function lookupStandardHours(lookup, loginId, name){
+    const info = lookupFile3Info(lookup, loginId, name);
+    return (info && info.standardHours) || 0;
   }
 
   /* ---------------- normalized row builder for file1 ---------------- */
@@ -2380,6 +2425,7 @@
         if(!row.email) row.email = lookupEmail(orgLookup, loginId, name) || '';
         row.employStatus = lookupEmployStatus(orgLookup, loginId, name);
         row.hireDate = lookupHireDate(orgLookup, loginId, name);
+        row.standardHours = lookupStandardHours(orgLookup, loginId, name);
       }
       return row;
     }).filter(r => r.name && r.date);
@@ -2413,7 +2459,6 @@
 
   function computeLate(rows, params){
     return rows.filter(r=>{
-      if(isExcludedEmployStatus(r.employStatus)) return false; // 퇴직·휴직자 자동 제외
       if(!isWorkDay(r, params)) return false;
       if(!isWeekday(r.date)) return false;
       if(r.checkinMin === null) return false;
@@ -2426,8 +2471,8 @@
       row.퇴근시각 = minutesToHHMM(r.checkoutMin);
       row.부재 = r.leaveMinutes > 0 ? minutesToHHMM(r.leaveMinutes) : '-';
       row.지각시간 = minutesToHHMM(lateDurationMinutes(r.checkinMin, r.leaveMinutes, params.lateTime));
-      // 이번 기준 대상 기간(연·월)에 입사한 사람이면 "입사월"이라고 표기해둔다.
-      row.비고 = isHireMonth(r.hireDate) ? '입사월' : '';
+      // 재직 상태(휴직·퇴직)가 있으면 그걸 우선 표기하고, 없으면 이번 기간 입사자만 "입사월"로 표기한다.
+      row.비고 = employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
       // 표에는 안 보이는 내부 계산용 값 (제외 기본값 판정에 씀)
       row._checkinMin = r.checkinMin;
       row._leaveMinutes = r.leaveMinutes;
@@ -2443,7 +2488,6 @@
   // (2026-09-28: 기존엔 퇴근 기록만 없는 경우만 잡았는데, 출근 기록만 없거나 둘 다 없는 경우도 포함하도록 확장).
   function computeMissing(rows, params){
     return rows.filter(r=>{
-      if(isExcludedEmployStatus(r.employStatus)) return false; // 퇴직·휴직자 자동 제외
       if(!isWorkDay(r, params)) return false;
       if(!isWeekday(r.date)) return false;
       if(r.leaveMinutes >= params.excludeLeaveMinutes) return false;
@@ -2455,14 +2499,18 @@
       row.근무일 = fmtDate(r.date);
       row.출근시각 = r.checkinMin === null ? '기록 없음' : minutesToHHMM(r.checkinMin);
       row.퇴근시각 = r.checkoutMin === null ? '기록 없음' : minutesToHHMM(r.checkoutMin);
-      row.구분 = (r.checkinMin === null && r.checkoutMin === null) ? '출퇴근 전체 누락' : (r.checkinMin === null ? '출근 기록 누락' : '퇴근 기록 누락');
+      // 2026-09-30: 어느 쪽이 누락됐는지 구분하던 열은 없애고, 재직 상태·입사월 비고로 통일했다.
+      row.비고 = employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
       return applyFieldOverride(row);
     });
   }
 
   // 담당자가 확인 후 직접 "제외" 체크한 출퇴근 체크 누락 후보(단순 착오·이미 별도 확인된 건 등)는
   // 지각자와 동일한 방식으로 기본은 포함(미체크)해두고, 체크한 건만 집계·저장에서 뺀다.
-  function isMissingExcluded(r){ return !!state.missingExcluded[r.key]; }
+  function isMissingExcluded(r){
+    if(Object.prototype.hasOwnProperty.call(state.missingExcluded, r.key)) return state.missingExcluded[r.key];
+    return r.비고 === '휴직' || r.비고 === '퇴직';
+  }
 
   /* ---------------- 휴게시간 초과 판정 기준 ---------------- */
   // 구속시간(퇴근-출근)과 무관하게, "기준 시간 및 제외 대상"에서 정한 표준 휴게시간(기본 60분)을
@@ -2584,46 +2632,49 @@
     const nameEmailMap = {};
     const nameStatusMap = {};
     const nameHireMap = {};
+    const nameStandardMap = {};
     f1.forEach(r=>{
       if(r.name && r.email && !(r.name in nameEmailMap)) nameEmailMap[r.name] = r.email;
       if(orgActive){
         if(r.name && r.orgUnit !== undefined && !(r.name in nameOrgMap)) nameOrgMap[r.name] = r.orgUnit;
         if(r.name && r.employStatus && !(r.name in nameStatusMap)) nameStatusMap[r.name] = r.employStatus;
         if(r.name && r.hireDate && !(r.name in nameHireMap)) nameHireMap[r.name] = r.hireDate;
+        if(r.name && r.standardHours && !(r.name in nameStandardMap)) nameStandardMap[r.name] = r.standardHours;
       }
     });
 
     const under = [];
     const over = [];
 
-    if(params.minHours){
-      f2.forEach(r=>{
-        if(excludeSpecial.some(ex=>r.name.includes(ex))) return;
-        if(isExcludedEmployStatus(nameStatusMap[r.name])) return; // 퇴직·휴직자 자동 제외
-        const excessH = (excessByPerson[r.name]||0)/60;
-        const adjusted = r.actualHours + excessH;
-        if(adjusted < params.minHours){
-          const row = { key: r.name+'|'+periodLabel(), 성명:r.name};
-          if(orgActive) row.사업부 = nameOrgMap[r.name] || '-';
-          row._email = nameEmailMap[r.name] || '';
-          row.연월 = periodLabel();
-          row.실근로시간 = hoursToHHMM(r.actualHours);
-          row.과다휴게보정 = '+'+hoursToHHMM(excessH);
-          row.보정후합계 = hoursToHHMM(adjusted);
-          row.기준 = hoursToHHMM(params.minHours);
-          row.미달시간 = hoursToHHMM(params.minHours - adjusted);
-          // 이번 기준 대상 기간(연·월)에 입사한 사람이면 "입사월"이라고 표기해둔다.
-          row.비고 = isHireMonth(nameHireMap[r.name]) ? '입사월' : '';
-          under.push(applyFieldOverride(row));
-        }
-      });
-    }
+    f2.forEach(r=>{
+      if(excludeSpecial.some(ex=>r.name.includes(ex))) return;
+      // 단시간 근로자는 인원 현황에서 올린 개인별 월 기준시간을 쓰고, 없으면 전체 공통 기준(params.minHours)을 쓴다.
+      // 둘 다 없으면(공통 기준도 안 정했고 이 사람은 단시간 지정도 안 된 경우) 판단할 기준이 없으니 건너뛴다.
+      const customMin = nameStandardMap[r.name] || 0;
+      const effectiveMin = customMin || params.minHours;
+      if(!effectiveMin) return;
+      const excessH = (excessByPerson[r.name]||0)/60;
+      const adjusted = r.actualHours + excessH;
+      if(adjusted < effectiveMin){
+        const row = { key: r.name+'|'+periodLabel(), 성명:r.name};
+        if(orgActive) row.사업부 = nameOrgMap[r.name] || '-';
+        row._email = nameEmailMap[r.name] || '';
+        row.연월 = periodLabel();
+        row.실근로시간 = hoursToHHMM(r.actualHours);
+        row.과다휴게보정 = '+'+hoursToHHMM(excessH);
+        row.보정후합계 = hoursToHHMM(adjusted);
+        row.기준 = hoursToHHMM(effectiveMin);
+        row.미달시간 = hoursToHHMM(effectiveMin - adjusted);
+        // 재직 상태(휴직·퇴직) > 이번 기간 입사자("입사월") > 단시간 근로자("단시간") 순으로 표기한다.
+        row.비고 = employStatusNote(nameStatusMap[r.name]) || (isHireMonth(nameHireMap[r.name]) ? '입사월' : (customMin ? '단시간' : ''));
+        under.push(applyFieldOverride(row));
+      }
+    });
 
     if(params.maxHours){
       const weekdayHours = computeWeekdayHoursByPerson(f1);
       Object.keys(weekdayHours).forEach(name=>{
         if(excludeSpecial.some(ex=>name.includes(ex))) return;
-        if(isExcludedEmployStatus(nameStatusMap[name])) return; // 퇴직·휴직자 자동 제외
         const excessH = (excessByPerson[name]||0)/60;
         const adjusted = weekdayHours[name] + excessH;
         if(adjusted > params.maxHours){
@@ -2634,7 +2685,7 @@
           row.보정후합계 = hoursToHHMM(adjusted);
           row.기준 = hoursToHHMM(params.maxHours);
           row.초과시간 = hoursToHHMM(adjusted - params.maxHours);
-          row.비고 = '';
+          row.비고 = employStatusNote(nameStatusMap[name]);
           applyFieldOverride(row);
           over.push(row);
         }
@@ -2646,8 +2697,14 @@
 
   // 담당자가 확인 후 직접 "제외" 체크한 의무근로시간 미달·최대근로시간 초과 후보는 기본은 포함(미체크)해두고,
   // 체크한 건만 집계·저장에서 뺀다 (지각자·출퇴근 누락자와 동일한 방식).
-  function isUnderExcluded(r){ return !!state.underExcluded[r.key]; }
-  function isOverExcluded(r){ return !!state.overExcluded[r.key]; }
+  function isUnderExcluded(r){
+    if(Object.prototype.hasOwnProperty.call(state.underExcluded, r.key)) return state.underExcluded[r.key];
+    return r.비고 === '휴직' || r.비고 === '퇴직';
+  }
+  function isOverExcluded(r){
+    if(Object.prototype.hasOwnProperty.call(state.overExcluded, r.key)) return state.overExcluded[r.key];
+    return r.비고 === '휴직' || r.비고 === '퇴직';
+  }
 
   /* ---------------- rendering ---------------- */
   function applyCellContent(td, colName, value, opts){
@@ -2788,6 +2845,32 @@
       td.appendChild(input);
     }
 
+    // 여러 건이 묶여 접혀 있는 그룹 머리글 행(성명/부서)을 수정할 때 쓴다 — 같은 사람의 모든 건(items)에
+    // 한 번에 override를 적용해서, 펼쳐진 개별 행을 하나하나 고치지 않아도 되게 한다(2026-09-30 신규).
+    function renderEditableGroupCell(td, colName, value, items, withChevron){
+      if(withChevron){
+        const chev = document.createElement('span');
+        chev.className = 'chev';
+        chev.textContent = '▸ ';
+        td.appendChild(chev);
+      }
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'cell-edit-input';
+      input.value = (value === undefined || value === null) ? '' : value;
+      input.addEventListener('click', e=>e.stopPropagation());
+      input.addEventListener('change', ()=>{
+        const newVal = input.value.trim();
+        if(newVal === String(value === undefined || value === null ? '' : value)) return;
+        items.forEach(it=>{
+          state.fieldOverrides[it.key] = state.fieldOverrides[it.key] || {};
+          state.fieldOverrides[it.key][colName] = newVal;
+        });
+        renderAll();
+      });
+      td.appendChild(input);
+    }
+
     // 데이터 행을 만든다. useBlankLead가 true면(사람이 여러 건이라 펼쳐진 하위 행) 성명·부서 칸을 비워서
     // 들여쓴 것처럼 보이게 하고, false면 실제 값을(수정 가능한 열이면 입력칸으로) 채운다.
     // countLabel은 showCount일 때만 "건수" 칸에 들어간다("1건" / "" / 그룹 헤더의 "N건" 등).
@@ -2851,8 +2934,13 @@
         groupTr.className = 'group-row' + (tagOrgChild ? ' org-child' : '');
         leadCols.forEach((c, i)=>{
           const td = document.createElement('td');
-          if(i===0){ td.innerHTML = '<span class="chev">▸</span> ' + g[c]; }
-          else{ td.textContent = g[c]; }
+          if(opts.editableCols && opts.editableCols.has(c)){
+            renderEditableGroupCell(td, c, g[c], g.items, i===0);
+          } else if(i===0){
+            td.innerHTML = '<span class="chev">▸</span> ' + g[c];
+          } else {
+            td.textContent = g[c];
+          }
           groupTr.appendChild(td);
         });
         const countTd = document.createElement('td');
@@ -3007,6 +3095,7 @@
   // 금요일은 부재가 있으면 (시간과 무관하게) 기존처럼 기본 제외한다.
   function isLateExcluded(r){
     if(Object.prototype.hasOwnProperty.call(state.lateExcluded, r.key)) return state.lateExcluded[r.key];
+    if(r.비고 === '휴직' || r.비고 === '퇴직') return true;
     if(r.부재 === '-') return false;
     if(r._dow === 5) return true; // 금요일
     if(r._leaveMinutes === 120 || r._leaveMinutes === 240){
@@ -3077,7 +3166,7 @@
       const excludedNames = new Set();
       f1.forEach(r=>{ if(r.name && isExcludedEmployStatus(r.employStatus)) excludedNames.add(r.name); });
       if(excludedNames.size){
-        msg += ' · 재직 상태 "퇴직"·"휴직"으로 자동 제외된 인원: ' + excludedNames.size.toLocaleString() + '명 (' + [...excludedNames].slice(0,5).join(', ') + (excludedNames.size>5?' 외':'') + ')';
+        msg += ' · 재직 상태 "퇴직"·"휴직"으로 비고 표시 + 제외 기본 체크된 인원: ' + excludedNames.size.toLocaleString() + '명 (' + [...excludedNames].slice(0,5).join(', ') + (excludedNames.size>5?' 외':'') + ') — 목록엔 그대로 나오고 필요하면 체크를 해제할 수 있어요';
       }
       const hireMonthNames = new Set();
       f1.forEach(r=>{ if(r.name && isHireMonth(r.hireDate)) hireMonthNames.add(r.name); });
@@ -3105,7 +3194,7 @@
       checkboxLabel: '제외',
       isChecked: isUnderExcluded,
       onCheck: (r, v) => { state.underExcluded[r.key] = v; renderHoursTab(); },
-      emptyText: params.minHours ? '미달자가 없습니다.' : '왼쪽 "월 의무 근로시간 기준"을 입력하면 계산됩니다.',
+      emptyText: '미달자가 없습니다 (왼쪽 "월 의무 근로시간 기준"을 입력했거나, 인원 현황에 단시간 근로자 월 기준시간을 올린 사람에 한해 계산돼요).',
       editableCols: EDITABLE_PERSON_COLS
     });
     renderGroupedTable(document.getElementById('table_over'), over, {
@@ -6223,9 +6312,9 @@
   // 엑셀·PDF 내보내기 전용 열 순서/선택 (화면 표시용 renderGroupedTable과는 별개).
   const EXPORT_COLUMNS = {
     late: ['사업부','부서','성명','근무일','출근시각','퇴근시각','부재','지각시간','비고'],
-    missing: ['사업부','부서','성명','근무일','출근시각','퇴근시각','구분'],
+    missing: ['사업부','부서','성명','근무일','출근시각','퇴근시각','비고'],
     under: ['연월','사업부','성명','실근로시간','보정후합계','미달시간','비고'],
-    over: ['사업부','성명','평일근로시간','보정후합계','초과시간']
+    over: ['사업부','성명','평일근로시간','보정후합계','초과시간','비고']
   };
 
   // 실제 데이터에 없는 열(예: 사업부 매칭이 안 된 리포트)은 걸러내고, 정해진 순서만 남긴다.
@@ -6291,7 +6380,9 @@
     const missingRows = sortRowsForExport(doc.missing||[]);
     const underRows = sortRowsForExport(doc.under||[]);
     const overRows = sortRowsForExport(doc.over||[]);
-    const underNote = underRows.length ? ('기준시간: ' + (underRows[0].기준 || '-')) : '';
+    // 단시간 근로자는 개인별로 다른 기준시간을 쓸 수 있어서, 값이 여러 개면 하나로 뭉뚱그리지 않고 같이 보여준다.
+    const underStandards = [...new Set(underRows.map(r=>r.기준).filter(Boolean))];
+    const underNote = underStandards.length ? ('기준시간: ' + (underStandards.length>1 ? underStandards.join(', ')+' (사람마다 다름 — 단시간 근로자 포함, 표의 "기준" 열 참고)' : underStandards[0])) : '';
     return [
       {title:'지각자', rows: lateRows, columns: pickExportColumns(lateRows, EXPORT_COLUMNS.late)},
       {title:'출퇴근 체크 누락자', rows: missingRows, columns: pickExportColumns(missingRows, EXPORT_COLUMNS.missing)},
