@@ -901,6 +901,9 @@
     <p class="page-intro-desc">네이버웍스에서 내려받은 출퇴근 현황 / 근로시간 현황 엑셀을 올리면, 매주·매월 수기로 하던 필터링을 대신 돌려 대상자만 뽑아드립니다. 필터링 계산 자체는 이 브라우저 안에서 이루어지고, 올리는 원본 파일도 선택한 연도·월·사업장 기준으로 그대로 자동 저장됩니다 (나중에 "원본 데이터" 탭에서 다시 확인·다운로드할 수 있어요).</p>
   </div>
 
+  <!-- 저장 이력 "수정"으로 불러온 경우 안내 (2026-10-01 신규) -->
+  <div class="banner info" id="editFromBanner" style="display:none;"><div id="editFromBannerText"></div></div>
+
   <!-- 기간 및 사업장 선택 -->
   <div class="card" id="periodCard">
     <h2><span class="step-num">1</span>기간 및 사업장 선택</h2>
@@ -1024,7 +1027,7 @@
     <!-- 휴직(+병가)·단축근로 업로드 (2026-10-01 신규) — 배우자 출산휴가는 휴직(+병가) 시트 안에 같이 있다 -->
     <div class="card" id="uploadCard4">
       <h2><span class="step-num">5-1</span>휴직·단축근로·배우자출산휴가 현황 업로드 <span style="font-weight:400;color:var(--muted);font-size:13px;">(선택 — 자동 비고·제외용)</span></h2>
-      <p class="hint">급여팀과 공유하는 근태 엑셀 파일(한 파일 안에 "휴직(+병가)", "단축근로" 시트가 있는 경우) 그대로 올려주세요 — 시트 이름으로 알아서 찾아 읽습니다. 성명과 시작일·종료일을 기준으로, 지금 선택된 연월과 기간이 겹치는 사람만 자동으로 비고에 표시됩니다 — 휴직(+병가) 시트에 있는 사람은 육아휴직·출산휴가·병가·배우자 출산휴가 등 항목과 관계없이 모두 표시되고(휴직항목이 배우자 출산휴가면 "배우자출산휴가", 그 외는 "휴직") 제외가 기본 체크되며, 단축근로는 "단축"으로 표시되고(제외는 기본 체크 안 함) "단축시간" 열 값이 있으면 그만큼 그 사람의 의무 근로시간 기준에서 자동으로 빠집니다. 매칭은 성명 기준입니다 — 동명이인이 있다면 결과에서 직접 확인해주세요. 올리지 않아도 나머지 기능은 그대로 동작합니다.</p>
+      <p class="hint">급여팀과 공유하는 근태 엑셀 파일(한 파일 안에 "휴직(+병가)", "단축근로" 시트가 있는 경우) 그대로 올려주세요 — 시트 이름으로 알아서 찾아 읽습니다. 성명과 시작일·종료일을 기준으로, 지금 선택된 연월과 기간이 겹치는 사람만 자동으로 비고에 표시됩니다 — 휴직(+병가) 시트에 있는 사람은 육아휴직·출산휴가·병가·배우자 출산휴가 등 항목과 관계없이 모두 표시되고(휴직항목이 배우자 출산휴가면 "배우자출산휴가", 그 외는 "휴직") 제외가 기본 체크되며, 단축근로는 "단축 5"처럼 단축시간과 함께 표시되고(제외는 기본 체크 안 함) "단축시간" 열 값이 있으면 그만큼 그 사람의 의무 근로시간 기준에서 자동으로 빠집니다. 매칭은 성명 기준입니다 — 동명이인이 있다면 결과에서 직접 확인해주세요. 올리지 않아도 나머지 기능은 그대로 동작합니다.</p>
       <div class="upload-row">
         <label class="file-btn">
           파일 선택
@@ -1159,7 +1162,7 @@
           <ul class="sub-list">
             <li>근로시간 현황 실근로시간 + 과다 휴게시간 보정 &lt; 의무 기준인 사람을 뽑았습니다.</li>
             <li>인원 현황에 "단시간 근로자 월 기준시간"을 올린 사람은 그 사람만 이 개인별 기준시간으로 판단하고, 비고에 "단시간"이라고 표시됩니다.</li>
-            <li>휴직·단축근로·배우자출산휴가 현황을 올렸고 단축근로 기록에 "단축시간"이 있으면, 그 사람만 "단축시간 × 이번 달 근무일수"만큼 기준시간에서 자동으로 빼서 판단하고 비고에 "단축"이라고 표시됩니다(제외 기본 체크는 안 됨 — 줄어든 기준으로 그대로 판단).</li>
+            <li>휴직·단축근로·배우자출산휴가 현황을 올렸고 단축근로 기록에 "단축시간"이 있으면, 그 사람만 "단축시간 × 이번 달 근무일수"만큼 기준시간에서 자동으로 빼서 판단하고 비고에 "단축 5"처럼 단축시간과 함께 표시됩니다(제외 기본 체크는 안 됨 — 줄어든 기준으로 그대로 판단).</li>
             <li>이번 기간 입사자는 "입사월", 휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다. 휴직(+병가) 시트(배우자 출산휴가 포함)에서 이번 달과 겹치는 사람도 마찬가지로 표시·제외됩니다.</li>
             <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
           </ul>
@@ -1176,7 +1179,7 @@
           <div class="title">최대 근로시간 초과자</div>
           <ul class="sub-list">
             <li>출퇴근 현황 기준 평일(토요일 제외) 근로시간 + 과다 휴게시간 보정 &gt; 최대 기준인 사람을 뽑았습니다.</li>
-            <li>휴직·퇴직자는 비고에 표시되고 "제외"가 기본 체크됩니다. 휴직(+병가) 시트(배우자 출산휴가 포함)에서 이번 달과 겹치는 사람도 마찬가지로 표시·제외되고, 단축근로 중인 사람은 "단축"으로 표시됩니다(제외 기본 체크는 안 됨).</li>
+            <li>휴직·퇴직자는 비고에 표시되고 "제외"가 기본 체크됩니다. 휴직(+병가) 시트(배우자 출산휴가 포함)에서 이번 달과 겹치는 사람도 마찬가지로 표시·제외되고, 단축근로 중인 사람은 "단축 5"처럼 단축시간과 함께 표시됩니다(제외 기본 체크는 안 됨).</li>
             <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
           </ul>
         </div>
@@ -1473,7 +1476,7 @@
     <!-- 저장 이력 조회 -->
     <div class="card" id="histBrowseCard">
       <h2>저장 이력 조회</h2>
-      <p class="hint">연도 · 월 · 사업장을 선택하면 그 기간에 저장된 모든 버전이 아래에 나타납니다. 목록에서 한 버전을 클릭하면 그때 저장된 상세 결과를 볼 수 있고, 엑셀 또는 PDF로 내려받을 수 있습니다.</p>
+      <p class="hint">처음에는 저장된 모든 버전이 최신순으로 나타나고, 연도 · 월 · 사업장을 고르면 고른 조건으로 좁혀집니다(일부만 골라도 됩니다). 목록에서 한 버전을 클릭하면 그때 저장된 상세 결과를 볼 수 있고, 엑셀 또는 PDF로 내려받을 수 있습니다. "수정"을 누르면 그 버전의 원본 파일과 저장된 체크·수정 내용을 근태 자동 필터링 화면으로 다시 불러오고, 고친 뒤 위 "지금 화면의 결과 저장"에서 저장하면 새 버전으로 저장됩니다(기존 버전은 그대로 남습니다).</p>
       <div class="params-grid">
         <div class="field">
           <label>연도</label>
@@ -1516,6 +1519,7 @@
           <div class="sub" id="histDetailSub"></div>
         </div>
         <div class="upload-row">
+          <button class="btn" id="histEditBtn" type="button">수정</button>
           <button class="btn" id="histDownloadXlsx" type="button">엑셀 다운로드</button>
           <button class="btn" id="histDownloadPdf" type="button">PDF 다운로드</button>
         </div>
@@ -2239,11 +2243,22 @@
   }
 
   /* ---------------- file loading ---------------- */
-  function loadFile(input, targetKey, defs, statusEl, onLoaded, archiveSourceKind){
+  // 업로드 칸마다 "파일 하나를 읽어 반영하는" 처리 함수를 input id로 등록해 둔다. 사람이 파일을 고르면
+  // change 이벤트로 불리고, 저장 이력의 "수정"에서는 보관된 원본 파일을 받아 같은 함수로 직접 다시 읽는다
+  // (이때는 opts.skipArchive로 원본을 또 보관하지 않는다). 처리 함수는 읽기가 끝나면 끝나는 Promise를 돌려준다.
+  const fileHandlers = {};
+  function registerFileInput(input, handle){
+    fileHandlers[input.id] = handle;
     input.addEventListener('change', function(e){
       const f = e.target.files[0];
-      if(!f) return;
+      if(f) handle(f, {});
+    });
+  }
+  function loadFile(input, targetKey, defs, statusEl, onLoaded, archiveSourceKind){
+    registerFileInput(input, function(f, opts){
+      return new Promise(resolve=>{
       const reader = new FileReader();
+      reader.onloadend = ()=> resolve();
       reader.onload = function(evt){
         try{
           const data = new Uint8Array(evt.target.result);
@@ -2260,12 +2275,13 @@
           onLoaded();
           // 올린 원본 파일을 그대로(가공 없이) 자동으로 같이 보관한다 — 필터링 계산 자체는 여전히
           // 이 브라우저 안에서만 이루어지고, 원본 파일 저장만 별도로 서버에 자동 반영된다 (2026-09-28 신규).
-          if(archiveSourceKind){ archiveRawFile(f, archiveSourceKind, statusEl); }
+          if(archiveSourceKind && !opts.skipArchive){ archiveRawFile(f, archiveSourceKind, statusEl); }
         }catch(err){
           statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
         }
       };
       reader.readAsArrayBuffer(f);
+      });
     });
   }
 
@@ -2276,10 +2292,10 @@
     return wb.SheetNames.find(n => needles.some(needle => n.includes(needle)));
   }
   function loadLeaveWorkbook(input, statusEl){
-    input.addEventListener('change', function(e){
-      const f = e.target.files[0];
-      if(!f) return;
+    registerFileInput(input, function(f, opts){
+      return new Promise(resolve=>{
       const reader = new FileReader();
+      reader.onloadend = ()=> resolve();
       reader.onload = function(evt){
         try{
           const data = new Uint8Array(evt.target.result);
@@ -2314,12 +2330,13 @@
           renderPreview(document.getElementById('previewShort'), 'shortSheet');
           renderMappingGrid(document.getElementById('mappingShortGrid'), 'shortSheet', FIELD_DEFS_SHORT);
           renderAll();
-          archiveRawFile(f, '휴직·단축근로 현황', statusEl);
+          if(!opts.skipArchive) archiveRawFile(f, '휴직·단축근로 현황', statusEl);
         }catch(err){
           statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
         }
       };
       reader.readAsArrayBuffer(f);
+      });
     });
   }
 
@@ -2359,10 +2376,10 @@
     return entries;
   }
   function loadBreakAddWorkbook(input, statusEl){
-    input.addEventListener('change', function(e){
-      const f = e.target.files[0];
-      if(!f) return;
+    registerFileInput(input, function(f, opts){
+      return new Promise(resolve=>{
       const reader = new FileReader();
+      reader.onloadend = ()=> resolve();
       reader.onload = function(evt){
         try{
           const wb = XLSX.read(new Uint8Array(evt.target.result), {type:'array'});
@@ -2375,12 +2392,13 @@
           const people = new Set(entries.map(e => e.name)).size;
           statusEl.innerHTML = '<b>' + f.name + '</b> · ' + people + '명 ' + entries.length + '건 불러옴 — "A. 휴게시간 초과 기록 확인"에 자동 체크됩니다';
           renderAll();
-          archiveRawFile(f, '휴게 추가 명단', statusEl);
+          if(!opts.skipArchive) archiveRawFile(f, '휴게 추가 명단', statusEl);
         }catch(err){
           statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
         }
       };
       reader.readAsArrayBuffer(f);
+      });
     });
   }
 
@@ -2655,6 +2673,19 @@
     return overlapping.reduce((a,b) => (b.shortHours > a.shortHours ? b : a));
   }
 
+  // 그 날짜가 단축근로 기간에 포함되는 기록(없으면 null). 여러 건이면 단축시간이 가장 큰 것.
+  function shortRecordForDate(lookup, name, date){
+    if(!date || !name) return null;
+    const recs = (lookup.short[name] || []).filter(rec => rec.start <= date && date <= rec.end);
+    if(!recs.length) return null;
+    return recs.reduce((a,b) => (b.shortHours > a.shortHours ? b : a));
+  }
+  // 비고용 "단축 5"처럼 단축시간을 같이 붙인 표기. 단축시간 값이 없으면 "단축"만.
+  function shortNote(rec){
+    if(!rec) return '';
+    return rec.shortHours ? '단축 ' + (Math.round(rec.shortHours*100)/100) : '단축';
+  }
+
   /* ---------------- normalized row builder for file1 ---------------- */
   function normalizeFile1(){
     const s = state.file1;
@@ -2737,7 +2768,7 @@
       row.부재 = r.leaveMinutes > 0 ? minutesToHHMM(r.leaveMinutes) : '-';
       row.지각시간 = minutesToHHMM(lateDurationMinutes(r.checkinMin, r.leaveMinutes, params.lateTime));
       // 퇴직 > 그 날짜가 포함된 휴직·배우자 출산휴가 기간(2026-10-01 신규) > 재직 상태(휴직) > 이번 기간 입사자("입사월") 순으로 표기.
-      row.비고 = (r.employStatus === '퇴직' ? '퇴직' : '') || leaveNoteForDate(extraLookup, r.name, r.date) || employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
+      row.비고 = (r.employStatus === '퇴직' ? '퇴직' : '') || leaveNoteForDate(extraLookup, r.name, r.date) || employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '') || shortNote(shortRecordForDate(extraLookup, r.name, r.date));
       // 표에는 안 보이는 내부 계산용 값 (제외 기본값 판정에 씀)
       row._checkinMin = r.checkinMin;
       row._leaveMinutes = r.leaveMinutes;
@@ -2765,9 +2796,10 @@
       row.근무일 = fmtDate(r.date);
       row.출근시각 = r.checkinMin === null ? '기록 없음' : minutesToHHMM(r.checkinMin);
       row.퇴근시각 = r.checkoutMin === null ? '기록 없음' : minutesToHHMM(r.checkoutMin);
+      row.부재 = r.leaveMinutes > 0 ? minutesToHHMM(r.leaveMinutes) : '-'; // 2026-10-01: 지각자 표처럼 그 날 상신된 연차·부재 시간도 표시
       // 2026-09-30: 어느 쪽이 누락됐는지 구분하던 열은 없애고, 재직 상태·입사월 비고로 통일했다.
       // 퇴직 > 그 날짜가 포함된 휴직·배우자 출산휴가 기간(2026-10-01 신규) > 재직 상태(휴직) > 입사월 순.
-      row.비고 = (r.employStatus === '퇴직' ? '퇴직' : '') || leaveNoteForDate(extraLookup, r.name, r.date) || employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
+      row.비고 = (r.employStatus === '퇴직' ? '퇴직' : '') || leaveNoteForDate(extraLookup, r.name, r.date) || employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '') || shortNote(shortRecordForDate(extraLookup, r.name, r.date));
       return applyFieldOverride(row);
     });
   }
@@ -2949,7 +2981,7 @@
         row.미달시간 = hoursToHHMM(effectiveMin - adjusted);
         // 퇴직 > 이번 연월과 겹치는 휴직·배우자 출산휴가 기간(2026-10-01 신규) > 재직 상태(휴직) >
         // 이번 기간 입사자("입사월") > 단시간 근로자("단시간") > 단축근로 기록("단축") 순으로 표기한다.
-        row.비고 = (nameStatusMap[r.name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, r.name, monthRange) || employStatusNote(nameStatusMap[r.name]) || (isHireMonth(nameHireMap[r.name]) ? '입사월' : (customMin ? '단시간' : (shortRec ? '단축' : '')));
+        row.비고 = (nameStatusMap[r.name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, r.name, monthRange) || employStatusNote(nameStatusMap[r.name]) || (isHireMonth(nameHireMap[r.name]) ? '입사월' : (customMin ? '단시간' : shortNote(shortRec)));
         under.push(applyFieldOverride(row));
       }
     });
@@ -2969,7 +3001,7 @@
           row.기준 = hoursToHHMM(params.maxHours);
           row.초과시간 = hoursToHHMM(adjusted - params.maxHours);
           const shortRecOver = shortRecordForMonth(extraLookup, name, monthRange);
-          row.비고 = (nameStatusMap[name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, name, monthRange) || employStatusNote(nameStatusMap[name]) || (shortRecOver ? '단축' : '');
+          row.비고 = (nameStatusMap[name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, name, monthRange) || employStatusNote(nameStatusMap[name]) || shortNote(shortRecOver);
           applyFieldOverride(row);
           over.push(row);
         }
@@ -3616,6 +3648,9 @@
     };
   }
 
+  // 저장할 때 같이 남겨서 "수정"으로 다시 불러올 때 그대로 되살리는 기준값 입력칸들
+  const EDIT_STATE_PARAM_IDS = ['p_lateTime','p_stdRest','p_workDayValues','p_excludeLeaveHours','p_excludeAlways','p_minHours','p_maxHours','p_excludeSpecial'];
+
   function reportDocData(versionName, isFinal){
     const scope = reportScope();
     return {
@@ -3647,7 +3682,18 @@
         lateTime: document.getElementById('p_lateTime').value,
         stdRest: document.getElementById('p_stdRest').value,
         minHours: document.getElementById('p_minHours').value,
-        maxHours: document.getElementById('p_maxHours').value
+        maxHours: document.getElementById('p_maxHours').value,
+        // 저장 이력의 "수정"으로 이 버전을 그대로 다시 불러올 때 쓰는 화면 상태(2026-10-01 신규).
+        // 별도 열을 만들지 않으려고 params(JSON) 안에 같이 넣어둔다.
+        _editState: {
+          inputs: EDIT_STATE_PARAM_IDS.reduce((o, id) => { o[id] = document.getElementById(id).value; return o; }, {}),
+          restFlags: state.restFlags,
+          lateExcluded: state.lateExcluded,
+          missingExcluded: state.missingExcluded,
+          underExcluded: state.underExcluded,
+          overExcluded: state.overExcluded,
+          fieldOverrides: state.fieldOverrides
+        }
       }
     };
   }
@@ -3678,6 +3724,7 @@
       }
       await db.collection('reports').add(reportDocData(versionName, isFinal));
       setSaveStatus('"' + versionName + '" 버전으로 저장했습니다.', false);
+      document.getElementById('editFromBanner').style.display = 'none'; // "수정"으로 불러온 작업을 새 버전으로 저장 완료
       document.getElementById('saveVersionName').value = '';
       document.getElementById('saveIsFinal').checked = false;
     }catch(err){
@@ -4083,7 +4130,7 @@
       const tr = document.createElement('tr');
       const td = document.createElement('td');
       td.className = 'empty-state';
-      td.colSpan = 7;
+      td.colSpan = 9;
       td.textContent = emptyMsg || '이 기간에 저장된 버전이 없습니다.';
       tr.appendChild(td);
       tb.appendChild(tr);
@@ -4092,7 +4139,7 @@
     }
     const thead = document.createElement('thead');
     const trh = document.createElement('tr');
-    ['버전명','저장일시','지각','누락','미달','초과','최종'].forEach(c=>{
+    ['연월','사업장','버전명','저장일시','지각','누락','미달','초과','최종'].forEach(c=>{
       const th = document.createElement('th');
       th.textContent = c;
       trh.appendChild(th);
@@ -4106,7 +4153,7 @@
       tr.className = 'hist-version-row';
       const savedAtLabel = v.savedAt ? new Date(v.savedAt).toLocaleString('ko-KR') : '-';
       const counts = v.counts || {};
-      [v.versionName || '-', savedAtLabel, counts.late ?? '-', counts.missing ?? '-', counts.under ?? '-', counts.over ?? '-'].forEach(val=>{
+      [(v.year||'-') + '년 ' + (v.month||'-'), v.company || '-', v.versionName || '-', savedAtLabel, counts.late ?? '-', counts.missing ?? '-', counts.under ?? '-', counts.over ?? '-'].forEach(val=>{
         const td = document.createElement('td');
         td.textContent = val;
         tr.appendChild(td);
@@ -4130,16 +4177,18 @@
     document.getElementById('histDetailCard').style.display = 'none';
     currentHistDoc = null;
     const scope = histScope();
-    if(!scope.year || !scope.month || !scope.company){
-      renderHistVersionsTable([], '연도 · 월 · 사업장을 모두 선택하면 저장된 버전 목록이 나타납니다.');
-      return;
-    }
     if(!db){
       renderHistVersionsTable([], '이 화면에서는 서버 조회 기능을 쓸 수 없어요.');
       return;
     }
-    unsubscribeHistVersions = reportsQuery(scope).orderBy('savedAt','desc').onSnapshot(
-      snap => renderHistVersionsTable(snap.docs.map(d => Object.assign({id:d.id}, d.data()))),
+    // 2026-10-01: 연도·월·사업장을 다 고르기 전에도 전체 이력을 보여주고, 고른 조건만큼만 좁힌다.
+    let q = db.collection('reports');
+    if(scope.company) q = q.where('company','==',scope.company);
+    if(scope.year) q = q.where('year','==',scope.year);
+    if(scope.month) q = q.where('month','==',scope.month);
+    const anyFilter = !!(scope.year || scope.month || scope.company);
+    unsubscribeHistVersions = q.orderBy('savedAt','desc').onSnapshot(
+      snap => renderHistVersionsTable(snap.docs.map(d => Object.assign({id:d.id}, d.data())), anyFilter ? '고른 조건에 저장된 버전이 없습니다.' : '아직 저장된 버전이 없습니다.'),
       err => renderHistVersionsTable([], '버전 목록을 불러오지 못했습니다: ' + err.message)
     );
   }
@@ -6193,7 +6242,7 @@
 
   const PERSON_DETAIL_METRIC_COLS = {
     late: [['_ym','연월'],['근무일','근무일'],['출근시각','출근시각'],['퇴근시각','퇴근시각'],['부재','부재'],['지각시간','지각시간'],['비고','비고']],
-    missing: [['_ym','연월'],['근무일','근무일'],['출근시각','출근시각'],['퇴근시각','퇴근시각']],
+    missing: [['_ym','연월'],['근무일','근무일'],['출근시각','출근시각'],['퇴근시각','퇴근시각'],['부재','부재']],
     under: [['_ym','연월'],['미달시간','미달시간'],['실근로시간','실근로시간'],['보정후합계','보정후합계'],['기준','기준'],['비고','비고']],
     over: [['_ym','연월'],['초과시간','초과시간'],['평일근로시간','평일근로시간'],['보정후합계','보정후합계'],['기준','기준']]
   };
@@ -6596,7 +6645,7 @@
   // 엑셀·PDF 내보내기 전용 열 순서/선택 (화면 표시용 renderGroupedTable과는 별개).
   const EXPORT_COLUMNS = {
     late: ['사업부','부서','성명','근무일','출근시각','퇴근시각','부재','지각시간','비고'],
-    missing: ['사업부','부서','성명','근무일','출근시각','퇴근시각','비고'],
+    missing: ['사업부','부서','성명','근무일','출근시각','퇴근시각','부재','비고'],
     under: ['연월','사업부','성명','실근로시간','보정후합계','미달시간','비고'],
     over: ['사업부','성명','평일근로시간','보정후합계','초과시간','비고']
   };
@@ -6629,6 +6678,130 @@
       if(da !== dbb) return da.localeCompare(dbb, 'ko');
       return (a.성명||'').localeCompare(b.성명||'', 'ko');
     });
+  }
+
+  /* ---------------- 저장 이력 → "수정" (2026-10-01 신규) ---------------- */
+  // 저장된 버전의 기간·사업장으로 "원본 데이터"에 보관된 원본 파일을 다시 받아 근태 자동 필터링에 그대로 읽히고,
+  // 저장 당시의 제외 체크·"개인이 직접 추가함" 체크·직접 수정한 성명/부서 값과 기준값을 되살린다.
+  // 다시 저장하면 saveVersion()이 늘 새 문서를 추가하므로 기존 버전은 그대로 두고 새 버전으로 남는다.
+  const RAW_KIND_INPUT = { '출퇴근 현황':'file1Input', '근로시간 현황':'file2Input', '인원 현황':'file3Input', '휴직·단축근로 현황':'file4Input', '휴게 추가 명단':'file5Input' };
+
+  // 종류별로 "그 버전을 저장하기 전에 올린 파일 중 가장 최근 것"을 고른다(없으면 저장 이후에 올린 것 중 가장 이른 것).
+  function pickRawFilesForVersion(files, savedAtMs){
+    const picked = {};
+    Object.keys(RAW_KIND_INPUT).forEach(kind=>{
+      const list = files.filter(f => f.sourceKind === kind).map(f => Object.assign({ _t: f.uploadedAt ? new Date(f.uploadedAt).getTime() : 0 }, f));
+      const before = list.filter(f => f._t <= savedAtMs).sort((a,b) => b._t - a._t);
+      const after = list.filter(f => f._t > savedAtMs).sort((a,b) => a._t - b._t);
+      const f = before[0] || after[0];
+      if(f) picked[RAW_KIND_INPUT[kind]] = f;
+    });
+    return picked;
+  }
+
+  function emptySheetState(){ return { rows: [], headers: [], mapping:null, isExample:false, sig:null }; }
+
+  async function editHistVersion(doc){
+    if(!doc) return;
+    if(!db){ setHistExportStatus('서버 조회 기능을 쓸 수 없어요.', true); return; }
+    if(!confirm('"' + (doc.versionName || '-') + '" 버전의 원본 파일과 저장된 내용을 근태 자동 필터링 화면으로 불러옵니다.\n지금 그 화면에서 작업 중인 내용은 이 버전으로 바뀝니다. 계속할까요?')) return;
+    const btn = document.getElementById('histEditBtn');
+    btn.disabled = true;
+    setHistExportStatus('원본 파일을 불러오는 중...', false);
+    try{
+      const scope = { year: doc.year, month: doc.month, company: doc.company };
+      const snap = await rawFilesQuery(scope).get();
+      const files = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
+      const savedAtMs = doc.savedAt ? new Date(doc.savedAt).getTime() : Date.now();
+      const picked = pickRawFilesForVersion(files, savedAtMs);
+      if(!picked.file1Input){
+        throw new Error('이 기간(' + scope.year + '년 ' + scope.month + ' · ' + scope.company + ')에 보관된 출퇴근 현황 원본 파일이 없어요. "원본 데이터" 탭에서 확인해주세요.');
+      }
+      // 파일을 다 받은 뒤에 화면을 바꾼다 — 다운로드가 실패하면 지금 화면은 그대로 둔다.
+      const downloaded = [];
+      for(const inputId of Object.keys(picked)){
+        const f = picked[inputId];
+        const { data, error } = await supabaseClient.storage.from(RAW_FILES_BUCKET).download(f.storagePath);
+        if(error) throw error;
+        downloaded.push({ inputId, file: new File([data], f.fileName || (f.sourceKind + '.xlsx'), { type: f.contentType || data.type || '' }) });
+      }
+
+      // 기간·사업장
+      [['p_year', scope.year], ['p_month', scope.month], ['p_company', scope.company]].forEach(([id, v])=>{
+        document.getElementById(id).value = v || '';
+        lsSet('geunte_param_'+id, v || '');
+      });
+      updatePeriodGate();
+
+      // 기준값 — 새 방식으로 저장된 버전은 입력칸 전체, 예전 버전은 남아있는 4개 값만
+      const es = (doc.params && doc.params._editState) || null;
+      const inputs = (es && es.inputs) || {
+        p_lateTime: doc.params && doc.params.lateTime, p_stdRest: doc.params && doc.params.stdRest,
+        p_minHours: doc.params && doc.params.minHours, p_maxHours: doc.params && doc.params.maxHours
+      };
+      Object.keys(inputs).forEach(id=>{
+        const el = document.getElementById(id);
+        if(el && inputs[id] !== undefined && inputs[id] !== null){ el.value = inputs[id]; lsSet('geunte_param_'+id, el.value); }
+      });
+
+      // 이전 작업 내용을 비우고, 보관된 파일이 없는 종류는 빈 상태로 둔다(예시 데이터가 섞이지 않게).
+      state.restFlags = {}; state.lateExcluded = {}; state.missingExcluded = {};
+      state.underExcluded = {}; state.overExcluded = {}; state.fieldOverrides = {};
+      state.file2 = emptySheetState(); state.file3 = emptySheetState();
+      state.leaveSheet = emptySheetState(); state.shortSheet = emptySheetState();
+      state.breakAddEntries = [];
+      ['file2Status','file3Status','file4Status','file5Status'].forEach(id=>{ document.getElementById(id).textContent = '이 버전에 보관된 파일이 없어요.'; });
+
+      for(const d of downloaded){
+        await fileHandlers[d.inputId](d.file, { skipArchive:true });
+      }
+
+      let note = '';
+      if(es){
+        state.restFlags = Object.assign({}, es.restFlags);
+        state.lateExcluded = Object.assign({}, es.lateExcluded);
+        state.missingExcluded = Object.assign({}, es.missingExcluded);
+        state.underExcluded = Object.assign({}, es.underExcluded);
+        state.overExcluded = Object.assign({}, es.overExcluded);
+        state.fieldOverrides = Object.assign({}, es.fieldOverrides);
+      }else{
+        // 예전 방식으로 저장된 버전: 저장된 명단과 지금 다시 계산한 결과를 비교해 제외 여부·직접 수정 값을 되살린다.
+        renderAll();
+        (doc.late || []).forEach(r=>{ state.lateExcluded[r.성명 + '|' + r.근무일] = !!r.제외; });
+        [['missing','missingAll','missingExcluded'], ['under','underAll','underExcluded'], ['over','overAll','overExcluded']].forEach(([savedKey, allKey, exKey])=>{
+          const savedByKey = {};
+          (doc[savedKey] || []).forEach(r=>{ if(r.key) savedByKey[r.key] = r; });
+          (currentResults[allKey] || []).forEach(r=>{
+            const saved = savedByKey[r.key];
+            state[exKey][r.key] = !saved;
+            if(saved){
+              EDITABLE_PERSON_COLS.forEach(c=>{
+                if(c in r && saved[c] !== undefined && saved[c] !== r[c]){
+                  state.fieldOverrides[r.key] = state.fieldOverrides[r.key] || {};
+                  state.fieldOverrides[r.key][c] = saved[c];
+                }
+              });
+            }
+          });
+        });
+        note = ' 이 버전은 예전 방식으로 저장돼 있어 "개인이 직접 추가함" 체크는 되살리지 못했어요 — 의무 · 최대 근로시간 탭에서 한 번 확인해주세요.';
+      }
+      renderAll();
+
+      const savedAtLabel = doc.savedAt ? new Date(doc.savedAt).toLocaleString('ko-KR') : '-';
+      document.getElementById('editFromBannerText').textContent =
+        '저장 이력의 "' + (doc.versionName || '-') + '" 버전(' + scope.year + '년 ' + scope.month + ' · ' + scope.company + ', 저장: ' + savedAtLabel + ')을 불러왔습니다. ' +
+        '수정한 뒤 "저장 이력 → 지금 화면의 결과 저장"에서 저장하면 새 버전으로 저장되고, 기존 버전은 그대로 남습니다.' + note;
+      document.getElementById('editFromBanner').style.display = '';
+      document.getElementById('saveVersionName').value = (doc.versionName || '') + ' (수정)';
+      setHistExportStatus('', false);
+      document.querySelector('.side-tab-btn[data-page="filter"]').click();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }catch(err){
+      setHistExportStatus('불러오지 못했습니다: ' + describeSupabaseError(err), true);
+    }finally{
+      btn.disabled = false;
+    }
   }
 
   function showHistDetail(doc){
@@ -7109,6 +7282,7 @@
     });
   })();
   document.getElementById('mailLogDownloadXlsx').addEventListener('click', downloadMailLogExcel);
+  document.getElementById('histEditBtn').addEventListener('click', ()=> editHistVersion(currentHistDoc));
   document.getElementById('histDownloadXlsx').addEventListener('click', downloadHistExcel);
   document.getElementById('histDownloadPdf').addEventListener('click', downloadHistPdf);
   ['h_year','h_month','h_company'].forEach(id=>{
