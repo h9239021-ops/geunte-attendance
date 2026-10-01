@@ -1051,6 +1051,19 @@
         <div id="mappingSpouseGrid" class="mapping-grid"></div>
       </div>
     </div>
+
+    <!-- 휴게 추가 명단 업로드 (2026-10-01 신규) -->
+    <div class="card" id="uploadCard5">
+      <h2><span class="step-num">5-2</span>휴게 추가 명단 업로드 <span style="font-weight:400;color:var(--muted);font-size:13px;">(선택 — 휴게시간 초과 자동 체크용)</span></h2>
+      <p class="hint">"이름"·"날짜" 열이 있는 휴게 추가 명단 엑셀을 올리면, 명단에 있는 사람·날짜와 일치하는 기록은 "의무 · 최대 근로시간" 탭의 <b>A. 휴게시간 초과 기록 확인</b>에서 "개인이 직접 추가함"이 자동으로 체크됩니다. 날짜 칸에는 날짜 형식 셀이나 "9/3, 9/17(새벽 근무)"처럼 월/일을 여러 개 적어도 되고, 괄호 안 메모는 무시합니다. 연도는 위에서 선택한 연도를 씁니다. 매칭은 성명 기준이고, 자동 체크된 항목도 직접 해제할 수 있습니다.</p>
+      <div class="upload-row">
+        <label class="file-btn">
+          파일 선택
+          <input type="file" id="file5Input" accept=".xlsx,.xls"/>
+        </label>
+        <span class="file-status" id="file5Status">아직 파일이 없어요 — 올리지 않으면 "개인이 직접 추가함"은 직접 체크해야 합니다.</span>
+      </div>
+    </div>
   </div>
 
   <!-- Shared params -->
@@ -2065,8 +2078,28 @@
                         // 눌러 다시 계산해도 이 값으로 덮어써진 채로 유지된다(저장하기 전까지는 세션 안에서만).
     leaveSheet: { rows: [], headers: [], mapping:null, isExample:true, sig:null },  // 휴직(+병가) 시트 (2026-10-01 신규)
     shortSheet: { rows: [], headers: [], mapping:null, isExample:true, sig:null },  // 단축근로 시트
-    spouseSheet: { rows: [], headers: [], mapping:null, isExample:true, sig:null }  // 배우자 출산휴가 시트
+    spouseSheet: { rows: [], headers: [], mapping:null, isExample:true, sig:null },  // 배우자 출산휴가 시트
+    breakAddEntries: [] // 휴게 추가 명단 (2026-10-01 신규) — {name, year|null, month, day}. 연도가 없는 "9/3" 형식은 선택된 연도로 채운다
   };
+
+  // 휴게 추가 명단을 restFlag 행의 key(name+"|"+fmtDate) 형식으로 바꾼 집합. 위에서 연도를 바꾸면 다시 만든다.
+  let breakAddKeyCache = { year:null, entries:null, set:new Set() };
+  function breakAddKeySet(){
+    const ym = selectedYearMonth();
+    const year = ym ? ym.year : new Date().getFullYear();
+    if(breakAddKeyCache.year !== year || breakAddKeyCache.entries !== state.breakAddEntries){
+      const set = new Set();
+      state.breakAddEntries.forEach(e=>{ set.add(e.name + '|' + fmtDate(new Date(e.year || year, e.month-1, e.day))); });
+      breakAddKeyCache = { year, entries:state.breakAddEntries, set };
+    }
+    return breakAddKeyCache.set;
+  }
+
+  // A단계 "개인이 직접 추가함" 체크 여부 — 직접 체크/해제한 값이 우선, 없으면 휴게 추가 명단에 있는지로 판단.
+  function isRestFlagged(row){
+    if(Object.prototype.hasOwnProperty.call(state.restFlags, row.key)) return !!state.restFlags[row.key];
+    return breakAddKeySet().has(row.key);
+  }
 
   // 지각자·출퇴근 체크 누락자·의무/최대 근로시간 결과 행에 성명·부서·사업부 직접 수정값이 있으면 덮어쓴다.
   // row.key는 원본 파일의 원래 이름으로 만들어지므로, 이름을 고쳐도 같은 레코드를 계속 찾아갈 수 있다.
@@ -2294,6 +2327,67 @@
           renderMappingGrid(document.getElementById('mappingSpouseGrid'), 'spouseSheet', FIELD_DEFS_SPOUSE);
           renderAll();
           archiveRawFile(f, '휴직·단축근로 현황', statusEl);
+        }catch(err){
+          statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
+        }
+      };
+      reader.readAsArrayBuffer(f);
+    });
+  }
+
+  // 휴게 추가 명단 (2026-10-01 신규). 모든 시트에서 "이름/성명"·"날짜/일자" 머리글 행을 찾아 그 아래를 읽는다.
+  // 날짜 칸은 날짜 셀(엑셀 일련번호)이거나 "9/3, 9/17(새벽 근무)"·"9/4(금/13:11~13:38)" 같은 텍스트 — 괄호 안 메모를
+  // 지운 뒤 월/일을 모두 뽑는다(한 칸에 여러 날짜 가능).
+  function parseBreakAddDates(v){
+    if(v===undefined || v===null || v==='') return [];
+    if(typeof v === 'number' || v instanceof Date){
+      const d = v instanceof Date ? v : parseDateCell(v);
+      return d ? [{ year:d.getFullYear(), month:d.getMonth()+1, day:d.getDate() }] : [];
+    }
+    const s = String(v).replace(/\([^)]*\)/g, ' ');
+    const out = [];
+    const re = /(?:(\d{4})[.\-\/])?(\d{1,2})[.\-\/](\d{1,2})/g;
+    let m;
+    while((m = re.exec(s))){
+      const month = +m[2], day = +m[3];
+      if(month>=1 && month<=12 && day>=1 && day<=31) out.push({ year: m[1] ? +m[1] : null, month, day });
+    }
+    return out;
+  }
+  function parseBreakAddWorkbook(wb){
+    const entries = [];
+    wb.SheetNames.forEach(sheetName=>{
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval:''});
+      const hIdx = rows.slice(0, 10).findIndex(r => r.some(c => /이름|성명/.test(String(c))) && r.some(c => /날짜|일자/.test(String(c))));
+      if(hIdx < 0) return;
+      const nameCol = rows[hIdx].findIndex(c => /이름|성명/.test(String(c)));
+      const dateCol = rows[hIdx].findIndex(c => /날짜|일자/.test(String(c)));
+      rows.slice(hIdx+1).forEach(r=>{
+        const name = String(r[nameCol] || '').trim();
+        if(!name) return;
+        parseBreakAddDates(r[dateCol]).forEach(d => entries.push(Object.assign({ name }, d)));
+      });
+    });
+    return entries;
+  }
+  function loadBreakAddWorkbook(input, statusEl){
+    input.addEventListener('change', function(e){
+      const f = e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = function(evt){
+        try{
+          const wb = XLSX.read(new Uint8Array(evt.target.result), {type:'array'});
+          const entries = parseBreakAddWorkbook(wb);
+          if(!entries.length){
+            statusEl.innerHTML = '<b>' + f.name + '</b> — "이름"·"날짜" 머리글이 있는 시트에서 날짜를 하나도 찾지 못했어요.';
+            return;
+          }
+          state.breakAddEntries = entries;
+          const people = new Set(entries.map(e => e.name)).size;
+          statusEl.innerHTML = '<b>' + f.name + '</b> · ' + people + '명 ' + entries.length + '건 불러옴 — "A. 휴게시간 초과 기록 확인"에 자동 체크됩니다';
+          renderAll();
+          archiveRawFile(f, '휴게 추가 명단', statusEl);
         }catch(err){
           statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
         }
@@ -2762,7 +2856,7 @@
   function computeExcessByPerson(restFlagRows){
     const map = {};
     restFlagRows.forEach(r=>{
-      if(state.restFlags[r.key]) return; // checked = 개인이 직접 추가 -> 계산에서 제외
+      if(isRestFlagged(r)) return; // checked = 개인이 직접 추가 -> 계산에서 제외
       map[r.성명] = (map[r.성명]||0) + r.excessMinutes;
     });
     return map; // name -> excess minutes
@@ -3033,7 +3127,7 @@
     thead.appendChild(trh);
     tableEl.appendChild(thead);
 
-    const isChecked = opts.isChecked || (row => !!state.restFlags[row.key]);
+    const isChecked = opts.isChecked || isRestFlagged;
     const onCheck = opts.onCheck || ((row, val) => { state.restFlags[row.key] = val; renderHoursTab(); });
 
     function makeCheckboxCell(row){
@@ -7152,6 +7246,7 @@
     renderAll();
   }, '인원 현황');
   loadLeaveWorkbook(document.getElementById('file4Input'), document.getElementById('file4Status'));
+  loadBreakAddWorkbook(document.getElementById('file5Input'), document.getElementById('file5Status'));
 
   document.getElementById('mapping1Toggle').addEventListener('click', ()=>{
     const panel = document.getElementById('mapping1Panel');
