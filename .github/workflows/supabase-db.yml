@@ -1,0 +1,33 @@
+# Supabase SQL 마이그레이션 자동 적용
+# supabase/migrations/ 아래 .sql 파일이 main에 올라오면, 아직 적용 안 된 파일만 순서대로 실행한다.
+# (이미 SQL Editor에서 수동 실행한 supabase_schema.sql / data_migration.sql은 여기 넣지 않는다 — 기준선으로 취급)
+name: Supabase DB 마이그레이션
+
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/**']
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-db
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: 프로젝트 연결
+        run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+      - name: 적용 예정 목록 (dry-run)
+        run: supabase db push --dry-run --password "$SUPABASE_DB_PASSWORD"
+      - name: 마이그레이션 적용
+        run: supabase db push --password "$SUPABASE_DB_PASSWORD"
