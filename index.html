@@ -4254,6 +4254,20 @@
     });
   }
 
+  // 그 버전에 저장된 출퇴근 체크 누락자(제외 처리된 건은 이미 빠진 최종 명단)를 성명별 날짜순으로 묶는다.
+  // 의무근로시간 미달이 단순 출퇴근 기록 누락 때문일 수 있어, 미달자 메일·목록에 같이 보여준다(2026-10-01 신규).
+  function mailMissingByName(doc){
+    const map = {};
+    (doc.missing || []).forEach(r=>{ (map[r.성명] = map[r.성명] || []).push(r); });
+    Object.keys(map).forEach(n => map[n].sort((a,b) => String(a.근무일).localeCompare(String(b.근무일))));
+    return map;
+  }
+  function mailMissingLines(rows){
+    if(!rows || !rows.length) return [];
+    return [' - 출퇴근 기록 누락: 총 ' + rows.length + '건']
+      .concat(rows.map(r => '    · ' + mailField(r.근무일) + '  (출근 ' + mailField(r.출근시각) + ' · 퇴근 ' + mailField(r.퇴근시각) + ')'));
+  }
+
   // 옛날에 저장된 버전에는 그 뒤에 추가된 필드(지각시간·미달시간 등)가 없을 수 있어,
   // 메일 본문에 "undefined"가 그대로 찍히지 않도록 값이 없으면 "-"로 대체한다.
   function mailField(v){ return (v===undefined || v===null || v==='') ? '-' : v; }
@@ -4399,6 +4413,7 @@
       '',
       ' <' + row.성명 + '님의 근무 현황>',
       ' - ' + yeolwol + ' 기준 의무 근로시간 미충족: 총 ' + mailField(row.미달시간),
+      ...mailMissingLines(mailMissingByName(doc)[row.성명]),
       '',
       '단순 출퇴근 기록 누락으로 인한 의무근로시간 미달이라면,',
       '근무기록이 정상 반영될 수 있도록 근무결과 신청서를 작성하여 근무기록을 성실히 관리하여 주시기 바라며,',
@@ -4596,7 +4611,7 @@
       const tr = document.createElement('tr');
       const td = document.createElement('td');
       td.className = 'empty-state';
-      td.colSpan = 6;
+      td.colSpan = opts.extraLabel ? 7 : 6;
       td.textContent = opts.emptyText;
       tr.appendChild(td);
       tb.appendChild(tr);
@@ -4605,7 +4620,8 @@
     }
     const thead = document.createElement('thead');
     const trh = document.createElement('tr');
-    ['사업부','성명','이메일', opts.metaLabel, '발송 상태', ''].forEach(c=>{
+    const extraCol = !!opts.extraLabel;
+    ['사업부','성명','이메일', opts.metaLabel].concat(extraCol ? [opts.extraLabel] : [], ['발송 상태', '']).forEach(c=>{
       const th = document.createElement('th');
       th.textContent = c;
       trh.appendChild(th);
@@ -4629,6 +4645,7 @@
       }
       tr.appendChild(emailTd);
       const metaTd = document.createElement('td'); metaTd.textContent = item.meta; tr.appendChild(metaTd);
+      if(extraCol){ const exTd = document.createElement('td'); exTd.textContent = item.extra || '-'; tr.appendChild(exTd); }
 
       const statusTd = document.createElement('td');
       function paintStatus(){
@@ -4664,7 +4681,7 @@
       const detailTr = document.createElement('tr');
       detailTr.className = 'detail-row';
       const detailTd = document.createElement('td');
-      detailTd.colSpan = 6;
+      detailTd.colSpan = extraCol ? 7 : 6;
       detailTr.appendChild(detailTd);
 
       btn.addEventListener('click', ()=>{
@@ -4722,6 +4739,7 @@
       : filteredUnder.length;
     renderMailTable(document.getElementById('table_mailUnder'), filteredUnder, {
       metaLabel: '미달시간',
+      extraLabel: '출퇴근 누락',
       emptyText: filterValue ? '이 조건에 해당하는 의무근로시간 미달자가 없습니다.' : '이 버전에는 의무근로시간 미달자가 없습니다.',
       buildDraft: item => buildUnderMailDraft(doc, item.row, underKind),
       reportId: doc.id, kind: 'under', mailKind: underKind, mailDoc: doc
@@ -4751,8 +4769,10 @@
     lastMailLateItems = lateItems;
 
     const underList = mailUnderList(doc);
+    const missingByName = mailMissingByName(doc);
     const underItems = underList.map(row=>({
       org: row.사업부 || '', name: row.성명, email: emailMap[row.성명] || row._email || '', meta: mailField(row.미달시간), row,
+      extra: (missingByName[row.성명] || []).length ? (missingByName[row.성명].length + '건 (' + missingByName[row.성명].map(r => String(r.근무일).replace(/^\d{4}-/, '')).join(', ') + ')') : '-',
       logInfo: underLogMap[row.성명] || null
     }));
     lastMailUnderItems = underItems;
