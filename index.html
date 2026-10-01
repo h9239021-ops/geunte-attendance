@@ -1020,6 +1020,37 @@
         <div id="mapping3Grid" class="mapping-grid"></div>
       </div>
     </div>
+
+    <!-- 휴직(+병가)·단축근로·배우자 출산휴가 업로드 (2026-10-01 신규) -->
+    <div class="card" id="uploadCard4">
+      <h2><span class="step-num">5-1</span>휴직·단축근로·배우자출산휴가 현황 업로드 <span style="font-weight:400;color:var(--muted);font-size:13px;">(선택 — 자동 비고·제외용)</span></h2>
+      <p class="hint">급여팀과 공유하는 근태 엑셀 파일(한 파일 안에 "휴직(+병가)", "단축근로", "배우자 출산휴가" 시트가 있는 경우) 그대로 올려주세요 — 시트 이름으로 알아서 찾아 읽습니다. 성명과 시작일·종료일을 기준으로, 지금 선택된 연월과 기간이 겹치는 사람만 자동으로 비고에 표시됩니다 — 휴직(+병가)·배우자 출산휴가는 "휴직"·"배우자출산휴가"로 표시되고 제외가 기본 체크되며, 단축근로는 "단축"으로 표시되고(제외는 기본 체크 안 함) "단축시간" 열 값이 있으면 그만큼 그 사람의 의무 근로시간 기준에서 자동으로 빠집니다. 매칭은 성명 기준입니다 — 동명이인이 있다면 결과에서 직접 확인해주세요. 올리지 않아도 나머지 기능은 그대로 동작합니다.</p>
+      <div class="upload-row">
+        <label class="file-btn">
+          파일 선택
+          <input type="file" id="file4Input" accept=".xlsx,.xls"/>
+        </label>
+        <span class="file-status" id="file4Status">아직 파일이 없어요 — 올리지 않으면 이 세 시트 기반 자동 표시는 적용되지 않습니다.</span>
+        <button class="mapping-toggle" id="mapping4Toggle" type="button">열 매핑 설정</button>
+      </div>
+      <div id="mapping4Panel" style="display:none;">
+        <p class="preview-label" style="margin-top:4px;">휴직(+병가) 시트</p>
+        <div class="preview-wrap">
+          <div class="preview-table-scroll"><table id="previewLeave"></table></div>
+        </div>
+        <div id="mappingLeaveGrid" class="mapping-grid"></div>
+        <p class="preview-label" style="margin-top:14px;">단축근로 시트</p>
+        <div class="preview-wrap">
+          <div class="preview-table-scroll"><table id="previewShort"></table></div>
+        </div>
+        <div id="mappingShortGrid" class="mapping-grid"></div>
+        <p class="preview-label" style="margin-top:14px;">배우자 출산휴가 시트</p>
+        <div class="preview-wrap">
+          <div class="preview-table-scroll"><table id="previewSpouse"></table></div>
+        </div>
+        <div id="mappingSpouseGrid" class="mapping-grid"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Shared params -->
@@ -1090,6 +1121,7 @@
             <li>근로일 · 평일 기준으로, 출근 기록이 없거나 퇴근 기록이 없거나 둘 다 없는 사람을 모두 뽑았습니다.</li>
             <li>6·8시간 연차 사용자와 지정한 제외 대상은 뺐습니다.</li>
             <li>이번 기간 입사자는 "입사월", 휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다.</li>
+            <li>휴직·단축근로·배우자출산휴가 현황을 올렸으면, 그 날짜가 휴직(+병가)·배우자 출산휴가 기간에 포함되는 사람도 "휴직"·"배우자출산휴가"로 비고에 표시되고 "제외"가 기본 체크됩니다.</li>
             <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
           </ul>
         </div>
@@ -1119,7 +1151,8 @@
           <ul class="sub-list">
             <li>근로시간 현황 실근로시간 + 과다 휴게시간 보정 &lt; 의무 기준인 사람을 뽑았습니다.</li>
             <li>인원 현황에 "단시간 근로자 월 기준시간"을 올린 사람은 그 사람만 이 개인별 기준시간으로 판단하고, 비고에 "단시간"이라고 표시됩니다.</li>
-            <li>이번 기간 입사자는 "입사월", 휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다.</li>
+            <li>휴직·단축근로·배우자출산휴가 현황을 올렸고 단축근로 기록에 "단축시간"이 있으면, 그 사람만 "단축시간 × 이번 달 근무일수"만큼 기준시간에서 자동으로 빼서 판단하고 비고에 "단축"이라고 표시됩니다(제외 기본 체크는 안 됨 — 줄어든 기준으로 그대로 판단).</li>
+            <li>이번 기간 입사자는 "입사월", 휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다. 휴직(+병가)·배우자 출산휴가 현황에서 이번 달과 겹치는 사람도 마찬가지로 표시·제외됩니다.</li>
             <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
           </ul>
         </div>
@@ -1135,7 +1168,7 @@
           <div class="title">최대 근로시간 초과자</div>
           <ul class="sub-list">
             <li>출퇴근 현황 기준 평일(토요일 제외) 근로시간 + 과다 휴게시간 보정 &gt; 최대 기준인 사람을 뽑았습니다.</li>
-            <li>휴직·퇴직자는 비고에 표시되고 "제외"가 기본 체크됩니다.</li>
+            <li>휴직·퇴직자는 비고에 표시되고 "제외"가 기본 체크됩니다. 휴직(+병가)·배우자 출산휴가 현황에서 이번 달과 겹치는 사람도 마찬가지로 표시·제외되고, 단축근로 중인 사람은 "단축"으로 표시됩니다(제외 기본 체크는 안 됨).</li>
             <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
           </ul>
         </div>
@@ -2028,8 +2061,11 @@
     missingExcluded: {}, // key: name+"|"+date -> true(수동 제외) / false or undefined (출퇴근 누락자 집계에 포함)
     underExcluded: {}, // key: name+"|"+연월 -> true(수동 제외) / false or undefined (의무근로시간 미달자 집계에 포함)
     overExcluded: {}, // key: name+"|"+연월 -> true(수동 제외) / false or undefined (최대근로시간 초과자 집계에 포함)
-    fieldOverrides: {} // key -> {성명?, 부서?, 사업부?} — 직접 수정한 값(2026-09-28 신규). 파일을 다시 불러와도, 다른 체크박스를
+    fieldOverrides: {}, // key -> {성명?, 부서?, 사업부?} — 직접 수정한 값(2026-09-28 신규). 파일을 다시 불러와도, 다른 체크박스를
                         // 눌러 다시 계산해도 이 값으로 덮어써진 채로 유지된다(저장하기 전까지는 세션 안에서만).
+    leaveSheet: { rows: [], headers: [], mapping:null, isExample:true, sig:null },  // 휴직(+병가) 시트 (2026-10-01 신규)
+    shortSheet: { rows: [], headers: [], mapping:null, isExample:true, sig:null },  // 단축근로 시트
+    spouseSheet: { rows: [], headers: [], mapping:null, isExample:true, sig:null }  // 배우자 출산휴가 시트
   };
 
   // 지각자·출퇴근 체크 누락자·의무/최대 근로시간 결과 행에 성명·부서·사업부 직접 수정값이 있으면 덮어쓴다.
@@ -2065,6 +2101,26 @@
     {key:'employStatus', label:'재직 상태 (선택 — "퇴직"·"휴직"인 사람은 결과 목록에 비고로 표시되고 "제외"가 기본으로 체크됩니다)', required:false, guess:['재직상태','재직 상태','재직여부','상태']},
     {key:'hireDate', label:'입사일 (선택 — 기준 대상 기간에 입사한 사람을 "입사월"로 표기)', required:false, guess:['입사일','입사날짜','입사연월일','입사']},
     {key:'standardHours', label:'단시간 근로자 월 기준시간 (선택 — 값이 있으면 이 사람만 의무 근로시간 판정 기준으로 이 시간을 쓰고, 비고에 "단시간"으로 표기)', required:false, guess:['기준시간','월기준시간','단시간기준시간','단시간 기준시간']}
+  ];
+
+  // 휴직(+병가)·단축근로·배우자 출산휴가 현황 — 급여팀과 공유하는 한 엑셀 파일 안의 세 시트를 각각
+  // 매핑한다(2026-10-01 신규). 세 시트 모두 "성명 + 시작일 + 종료일" 기간 데이터라, 선택된 연월과
+  // 겹치는 기간이 있는 사람만 자동으로 비고 표시 + 제외 기본 체크된다.
+  const FIELD_DEFS_LEAVE = [
+    {key:'name', label:'성명', required:true, guess:['성명','이름','name']},
+    {key:'startDate', label:'시작일', required:true, guess:['시작일','시작']},
+    {key:'endDate', label:'종료일', required:true, guess:['종료일','종료']}
+  ];
+  const FIELD_DEFS_SHORT = [
+    {key:'name', label:'성명', required:true, guess:['성명','이름','name']},
+    {key:'startDate', label:'시작일', required:true, guess:['시작일','시작']},
+    {key:'endDate', label:'종료일', required:true, guess:['종료일','종료']},
+    {key:'shortHours', label:'단축시간 (선택 — 하루 몇 시간 단축인지. 있으면 그 사람의 의무 근로시간 기준에서 자동으로 빼서 계산)', required:false, guess:['단축시간','단축 시간']}
+  ];
+  const FIELD_DEFS_SPOUSE = [
+    {key:'name', label:'성명', required:true, guess:['성명','이름','name']},
+    {key:'startDate', label:'시작일', required:true, guess:['시작일','시작']},
+    {key:'endDate', label:'종료일', required:true, guess:['종료일','종료']}
   ];
 
   /* ---------------- parsing helpers ---------------- */
@@ -2182,6 +2238,62 @@
           // 올린 원본 파일을 그대로(가공 없이) 자동으로 같이 보관한다 — 필터링 계산 자체는 여전히
           // 이 브라우저 안에서만 이루어지고, 원본 파일 저장만 별도로 서버에 자동 반영된다 (2026-09-28 신규).
           if(archiveSourceKind){ archiveRawFile(f, archiveSourceKind, statusEl); }
+        }catch(err){
+          statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
+        }
+      };
+      reader.readAsArrayBuffer(f);
+    });
+  }
+
+  // 한 엑셀 파일 안에서 "휴직(+병가)"·"단축근로"·"배우자 출산휴가" 세 시트를 시트 이름으로 찾아 각각
+  // state.leaveSheet/shortSheet/spouseSheet에 나눠 담는다(2026-10-01 신규). loadFile()과 달리 첫 번째
+  // 시트만 읽지 않고, 파일 안의 모든 시트 이름을 훑어 포함 관계로 매칭한다(정확한 이름이 아니어도 됨).
+  function findSheetByNameIncludes(wb, needles){
+    return wb.SheetNames.find(n => needles.some(needle => n.includes(needle)));
+  }
+  function loadLeaveWorkbook(input, statusEl){
+    input.addEventListener('change', function(e){
+      const f = e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = function(evt){
+        try{
+          const data = new Uint8Array(evt.target.result);
+          const wb = XLSX.read(data, {type:'array'});
+          const found = [];
+          const notFound = [];
+          const sheetSpecs = [
+            { label:'휴직(+병가)', needles:['휴직'], stateKey:'leaveSheet', defs:FIELD_DEFS_LEAVE, excludeNeedles:['단축'] },
+            { label:'단축근로', needles:['단축'], stateKey:'shortSheet', defs:FIELD_DEFS_SHORT, excludeNeedles:[] },
+            { label:'배우자 출산휴가', needles:['배우자'], stateKey:'spouseSheet', defs:FIELD_DEFS_SPOUSE, excludeNeedles:[] }
+          ];
+          sheetSpecs.forEach(spec=>{
+            const name = wb.SheetNames.find(n => spec.needles.some(needle => n.includes(needle)) && !spec.excludeNeedles.some(ex => n.includes(ex)));
+            if(!name){ notFound.push(spec.label); return; }
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {defval:''});
+            if(!rows.length){ notFound.push(spec.label + '(빈 시트)'); return; }
+            const headers = Object.keys(rows[0]);
+            const sig = headerSignature(headers);
+            const savedMapping = lsGet('geunte_map_'+spec.stateKey+'_'+sig, null);
+            const mapping = savedMapping || guessMapping(headers, spec.defs);
+            state[spec.stateKey] = { rows, headers, mapping, isExample:false, sig };
+            found.push(spec.label + '(' + name + ') ' + rows.length + '행');
+          });
+          if(!found.length){
+            statusEl.innerHTML = '<b>' + f.name + '</b> — "휴직"·"단축"·"배우자" 시트를 못 찾았어요. 시트 이름을 확인해주세요.';
+            return;
+          }
+          statusEl.innerHTML = '<b>' + f.name + '</b> · ' + found.join(', ') + ' 불러옴' + (notFound.length ? ' · ' + notFound.join(', ') + ' 시트는 못 찾음' : '');
+          document.getElementById('mapping4Panel').style.display = 'block';
+          renderPreview(document.getElementById('previewLeave'), 'leaveSheet');
+          renderMappingGrid(document.getElementById('mappingLeaveGrid'), 'leaveSheet', FIELD_DEFS_LEAVE);
+          renderPreview(document.getElementById('previewShort'), 'shortSheet');
+          renderMappingGrid(document.getElementById('mappingShortGrid'), 'shortSheet', FIELD_DEFS_SHORT);
+          renderPreview(document.getElementById('previewSpouse'), 'spouseSheet');
+          renderMappingGrid(document.getElementById('mappingSpouseGrid'), 'spouseSheet', FIELD_DEFS_SPOUSE);
+          renderAll();
+          archiveRawFile(f, '휴직·단축근로 현황', statusEl);
         }catch(err){
           statusEl.textContent = '파일을 읽지 못했어요: ' + err.message;
         }
@@ -2391,6 +2503,93 @@
     return (info && info.standardHours) || 0;
   }
 
+  /* ---------------- 휴직(+병가)·단축근로·배우자 출산휴가 (2026-10-01 신규) ---------------- */
+  function leaveSheetActive(){ return !state.leaveSheet.isExample && state.leaveSheet.rows && state.leaveSheet.rows.length > 0; }
+  function shortSheetActive(){ return !state.shortSheet.isExample && state.shortSheet.rows && state.shortSheet.rows.length > 0; }
+  function spouseSheetActive(){ return !state.spouseSheet.isExample && state.spouseSheet.rows && state.spouseSheet.rows.length > 0; }
+
+  function normalizeLeaveSheet(){
+    const s = state.leaveSheet;
+    if(!s.mapping) s.mapping = guessMapping(s.headers, FIELD_DEFS_LEAVE);
+    return s.rows.map(r=>({
+      name: String(mv(r, s.mapping, 'name') || '').trim(),
+      start: parseDateCell(mv(r, s.mapping, 'startDate')),
+      end: parseDateCell(mv(r, s.mapping, 'endDate'))
+    })).filter(r => r.name && r.start && r.end);
+  }
+  function normalizeShortSheet(){
+    const s = state.shortSheet;
+    if(!s.mapping) s.mapping = guessMapping(s.headers, FIELD_DEFS_SHORT);
+    return s.rows.map(r=>({
+      name: String(mv(r, s.mapping, 'name') || '').trim(),
+      start: parseDateCell(mv(r, s.mapping, 'startDate')),
+      end: parseDateCell(mv(r, s.mapping, 'endDate')),
+      shortHours: parseDurationHours(mv(r, s.mapping, 'shortHours')) || 0
+    })).filter(r => r.name && r.start && r.end);
+  }
+  function normalizeSpouseSheet(){
+    const s = state.spouseSheet;
+    if(!s.mapping) s.mapping = guessMapping(s.headers, FIELD_DEFS_SPOUSE);
+    return s.rows.map(r=>({
+      name: String(mv(r, s.mapping, 'name') || '').trim(),
+      start: parseDateCell(mv(r, s.mapping, 'startDate')),
+      end: parseDateCell(mv(r, s.mapping, 'endDate'))
+    })).filter(r => r.name && r.start && r.end);
+  }
+
+  function groupByName(records){
+    const map = {};
+    records.forEach(r=>{ (map[r.name] = map[r.name] || []).push(r); });
+    return map;
+  }
+
+  // computeLate/computeMissing/computeUnderOver가 매 렌더링마다 한 번씩 불러서 쓰는 조회표.
+  // 성명으로만 매칭한다 — 휴직/단축근로/배우자 출산휴가 시트의 "사번"은 인원 현황(file3)의 로그인
+  // 아이디와 체계가 달라 안정적으로 맞출 수 없어서, 이 책 전체에서 이미 쓰고 있는 "성명 매칭" 방식을 그대로 따른다.
+  function buildLeaveExtraLookup(){
+    return {
+      leave: leaveSheetActive() ? groupByName(normalizeLeaveSheet()) : {},
+      short: shortSheetActive() ? groupByName(normalizeShortSheet()) : {},
+      spouse: spouseSheetActive() ? groupByName(normalizeSpouseSheet()) : {}
+    };
+  }
+
+  // 선택된 연·월의 시작일~말일 (Date). 미선택이면 null.
+  function monthRangeDates(ym){
+    if(!ym) return null;
+    return { start: new Date(ym.year, ym.month-1, 1), end: new Date(ym.year, ym.month, 0) };
+  }
+
+  // 지각자·출퇴근 체크 누락자(날짜 단위 판정)용 — 그 날짜가 휴직/배우자 출산휴가 기간에 포함되는지.
+  function leaveNoteForDate(lookup, name, date){
+    if(!date || !name) return '';
+    const leaveRecs = lookup.leave[name];
+    if(leaveRecs && leaveRecs.some(rec => rec.start <= date && date <= rec.end)) return '휴직';
+    const spouseRecs = lookup.spouse[name];
+    if(spouseRecs && spouseRecs.some(rec => rec.start <= date && date <= rec.end)) return '배우자출산휴가';
+    return '';
+  }
+
+  // 의무·최대 근로시간(월 단위 판정)용 — 선택된 연월과 하루라도 겹치는 휴직/배우자 출산휴가 기간이 있는지.
+  function leaveNoteForMonth(lookup, name, monthRange){
+    if(!monthRange || !name) return '';
+    const leaveRecs = lookup.leave[name];
+    if(leaveRecs && leaveRecs.some(rec => rec.start <= monthRange.end && rec.end >= monthRange.start)) return '휴직';
+    const spouseRecs = lookup.spouse[name];
+    if(spouseRecs && spouseRecs.some(rec => rec.start <= monthRange.end && rec.end >= monthRange.start)) return '배우자출산휴가';
+    return '';
+  }
+
+  // 선택된 연월과 겹치는 단축근로 기록(없으면 null). 겹치는 기록이 여러 건이면 단축시간이 가장 큰 것을 쓴다.
+  function shortRecordForMonth(lookup, name, monthRange){
+    if(!monthRange || !name) return null;
+    const recs = lookup.short[name];
+    if(!recs) return null;
+    const overlapping = recs.filter(rec => rec.start <= monthRange.end && rec.end >= monthRange.start);
+    if(!overlapping.length) return null;
+    return overlapping.reduce((a,b) => (b.shortHours > a.shortHours ? b : a));
+  }
+
   /* ---------------- normalized row builder for file1 ---------------- */
   function normalizeFile1(){
     const s = state.file1;
@@ -2458,6 +2657,7 @@
   }
 
   function computeLate(rows, params){
+    const extraLookup = buildLeaveExtraLookup();
     return rows.filter(r=>{
       if(!isWorkDay(r, params)) return false;
       if(!isWeekday(r.date)) return false;
@@ -2471,8 +2671,8 @@
       row.퇴근시각 = minutesToHHMM(r.checkoutMin);
       row.부재 = r.leaveMinutes > 0 ? minutesToHHMM(r.leaveMinutes) : '-';
       row.지각시간 = minutesToHHMM(lateDurationMinutes(r.checkinMin, r.leaveMinutes, params.lateTime));
-      // 재직 상태(휴직·퇴직)가 있으면 그걸 우선 표기하고, 없으면 이번 기간 입사자만 "입사월"로 표기한다.
-      row.비고 = employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
+      // 퇴직 > 그 날짜가 포함된 휴직·배우자 출산휴가 기간(2026-10-01 신규) > 재직 상태(휴직) > 이번 기간 입사자("입사월") 순으로 표기.
+      row.비고 = (r.employStatus === '퇴직' ? '퇴직' : '') || leaveNoteForDate(extraLookup, r.name, r.date) || employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
       // 표에는 안 보이는 내부 계산용 값 (제외 기본값 판정에 씀)
       row._checkinMin = r.checkinMin;
       row._leaveMinutes = r.leaveMinutes;
@@ -2487,6 +2687,7 @@
   // 근로일 · 평일이고 부재가 없는데, 출근·퇴근 기록 중 하나라도 없으면(둘 다 없는 경우 포함) 누락자로 본다
   // (2026-09-28: 기존엔 퇴근 기록만 없는 경우만 잡았는데, 출근 기록만 없거나 둘 다 없는 경우도 포함하도록 확장).
   function computeMissing(rows, params){
+    const extraLookup = buildLeaveExtraLookup();
     return rows.filter(r=>{
       if(!isWorkDay(r, params)) return false;
       if(!isWeekday(r.date)) return false;
@@ -2500,7 +2701,8 @@
       row.출근시각 = r.checkinMin === null ? '기록 없음' : minutesToHHMM(r.checkinMin);
       row.퇴근시각 = r.checkoutMin === null ? '기록 없음' : minutesToHHMM(r.checkoutMin);
       // 2026-09-30: 어느 쪽이 누락됐는지 구분하던 열은 없애고, 재직 상태·입사월 비고로 통일했다.
-      row.비고 = employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
+      // 퇴직 > 그 날짜가 포함된 휴직·배우자 출산휴가 기간(2026-10-01 신규) > 재직 상태(휴직) > 입사월 순.
+      row.비고 = (r.employStatus === '퇴직' ? '퇴직' : '') || leaveNoteForDate(extraLookup, r.name, r.date) || employStatusNote(r.employStatus) || (isHireMonth(r.hireDate) ? '입사월' : '');
       return applyFieldOverride(row);
     });
   }
@@ -2509,7 +2711,7 @@
   // 지각자와 동일한 방식으로 기본은 포함(미체크)해두고, 체크한 건만 집계·저장에서 뺀다.
   function isMissingExcluded(r){
     if(Object.prototype.hasOwnProperty.call(state.missingExcluded, r.key)) return state.missingExcluded[r.key];
-    return r.비고 === '휴직' || r.비고 === '퇴직';
+    return r.비고 === '휴직' || r.비고 === '퇴직' || r.비고 === '배우자출산휴가';
   }
 
   /* ---------------- 휴게시간 초과 판정 기준 ---------------- */
@@ -2623,6 +2825,8 @@
     const excessByPerson = computeExcessByPerson(restFlags); // minutes
     const f2 = normalizeFile2();
     const excludeSpecial = params.excludeSpecial;
+    const extraLookup = buildLeaveExtraLookup();
+    const monthRange = monthRangeDates(selectedYearMonth());
 
     // 근로시간 현황(file2)에는 부서/사업부/이메일/재직상태 정보가 없어서, 같은 이름의 출퇴근 현황(file1) 행에서
     // 매칭되는 값을 이름 기준으로 가져와 붙인다. 이메일은 file1 자체의 로그인 아이디 열에서 오므로 사업부
@@ -2648,10 +2852,23 @@
 
     f2.forEach(r=>{
       if(excludeSpecial.some(ex=>r.name.includes(ex))) return;
-      // 단시간 근로자는 인원 현황에서 올린 개인별 월 기준시간을 쓰고, 없으면 전체 공통 기준(params.minHours)을 쓴다.
-      // 둘 다 없으면(공통 기준도 안 정했고 이 사람은 단시간 지정도 안 된 경우) 판단할 기준이 없으니 건너뛴다.
+      // 단시간 근로자는 인원 현황에서 올린 개인별 월 기준시간을 그대로 쓴다(최우선). 그게 없고, 이 사람이 이번
+      // 연월과 겹치는 단축근로 기록이 있으면 "단축시간 × 그 기간에 포함되는 실제 근무일수"만큼 전체 공통 기준
+      // (params.minHours)에서 자동으로 빼서 쓴다(2026-10-01 신규, 리니 님 요청). 셋 다 없으면 판단 기준이 없어 건너뛴다.
       const customMin = nameStandardMap[r.name] || 0;
-      const effectiveMin = customMin || params.minHours;
+      let shortRec = null;
+      let effectiveMin = customMin;
+      if(!customMin){
+        shortRec = shortRecordForMonth(extraLookup, r.name, monthRange);
+        if(shortRec && shortRec.shortHours && params.minHours && monthRange){
+          const overlapStart = shortRec.start > monthRange.start ? shortRec.start : monthRange.start;
+          const overlapEnd = shortRec.end < monthRange.end ? shortRec.end : monthRange.end;
+          const workDaysInOverlap = f1.filter(x => x.name === r.name && isWorkDay(x, params) && x.date >= overlapStart && x.date <= overlapEnd).length;
+          effectiveMin = Math.max(0, params.minHours - shortRec.shortHours * workDaysInOverlap);
+        }else{
+          effectiveMin = params.minHours;
+        }
+      }
       if(!effectiveMin) return;
       const excessH = (excessByPerson[r.name]||0)/60;
       const adjusted = r.actualHours + excessH;
@@ -2665,8 +2882,9 @@
         row.보정후합계 = hoursToHHMM(adjusted);
         row.기준 = hoursToHHMM(effectiveMin);
         row.미달시간 = hoursToHHMM(effectiveMin - adjusted);
-        // 재직 상태(휴직·퇴직) > 이번 기간 입사자("입사월") > 단시간 근로자("단시간") 순으로 표기한다.
-        row.비고 = employStatusNote(nameStatusMap[r.name]) || (isHireMonth(nameHireMap[r.name]) ? '입사월' : (customMin ? '단시간' : ''));
+        // 퇴직 > 이번 연월과 겹치는 휴직·배우자 출산휴가 기간(2026-10-01 신규) > 재직 상태(휴직) >
+        // 이번 기간 입사자("입사월") > 단시간 근로자("단시간") > 단축근로 기록("단축") 순으로 표기한다.
+        row.비고 = (nameStatusMap[r.name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, r.name, monthRange) || employStatusNote(nameStatusMap[r.name]) || (isHireMonth(nameHireMap[r.name]) ? '입사월' : (customMin ? '단시간' : (shortRec ? '단축' : '')));
         under.push(applyFieldOverride(row));
       }
     });
@@ -2685,7 +2903,8 @@
           row.보정후합계 = hoursToHHMM(adjusted);
           row.기준 = hoursToHHMM(params.maxHours);
           row.초과시간 = hoursToHHMM(adjusted - params.maxHours);
-          row.비고 = employStatusNote(nameStatusMap[name]);
+          const shortRecOver = shortRecordForMonth(extraLookup, name, monthRange);
+          row.비고 = (nameStatusMap[name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, name, monthRange) || employStatusNote(nameStatusMap[name]) || (shortRecOver ? '단축' : '');
           applyFieldOverride(row);
           over.push(row);
         }
@@ -2699,11 +2918,11 @@
   // 체크한 건만 집계·저장에서 뺀다 (지각자·출퇴근 누락자와 동일한 방식).
   function isUnderExcluded(r){
     if(Object.prototype.hasOwnProperty.call(state.underExcluded, r.key)) return state.underExcluded[r.key];
-    return r.비고 === '휴직' || r.비고 === '퇴직';
+    return r.비고 === '휴직' || r.비고 === '퇴직' || r.비고 === '배우자출산휴가';
   }
   function isOverExcluded(r){
     if(Object.prototype.hasOwnProperty.call(state.overExcluded, r.key)) return state.overExcluded[r.key];
-    return r.비고 === '휴직' || r.비고 === '퇴직';
+    return r.비고 === '휴직' || r.비고 === '퇴직' || r.비고 === '배우자출산휴가';
   }
 
   /* ---------------- rendering ---------------- */
@@ -3095,7 +3314,7 @@
   // 금요일은 부재가 있으면 (시간과 무관하게) 기존처럼 기본 제외한다.
   function isLateExcluded(r){
     if(Object.prototype.hasOwnProperty.call(state.lateExcluded, r.key)) return state.lateExcluded[r.key];
-    if(r.비고 === '휴직' || r.비고 === '퇴직') return true;
+    if(r.비고 === '휴직' || r.비고 === '퇴직' || r.비고 === '배우자출산휴가') return true;
     if(r.부재 === '-') return false;
     if(r._dow === 5) return true; // 금요일
     if(r._leaveMinutes === 120 || r._leaveMinutes === 240){
@@ -6932,6 +7151,7 @@
     renderMappingGrid(document.getElementById('mapping3Grid'), 'file3', FIELD_DEFS_3);
     renderAll();
   }, '인원 현황');
+  loadLeaveWorkbook(document.getElementById('file4Input'), document.getElementById('file4Status'));
 
   document.getElementById('mapping1Toggle').addEventListener('click', ()=>{
     const panel = document.getElementById('mapping1Panel');
@@ -6958,6 +7178,19 @@
     if(show){
       renderPreview(document.getElementById('preview3'), 'file3');
       renderMappingGrid(document.getElementById('mapping3Grid'), 'file3', FIELD_DEFS_3);
+    }
+  });
+  document.getElementById('mapping4Toggle').addEventListener('click', ()=>{
+    const panel = document.getElementById('mapping4Panel');
+    const show = panel.style.display === 'none';
+    panel.style.display = show ? 'block' : 'none';
+    if(show){
+      renderPreview(document.getElementById('previewLeave'), 'leaveSheet');
+      renderMappingGrid(document.getElementById('mappingLeaveGrid'), 'leaveSheet', FIELD_DEFS_LEAVE);
+      renderPreview(document.getElementById('previewShort'), 'shortSheet');
+      renderMappingGrid(document.getElementById('mappingShortGrid'), 'shortSheet', FIELD_DEFS_SHORT);
+      renderPreview(document.getElementById('previewSpouse'), 'spouseSheet');
+      renderMappingGrid(document.getElementById('mappingSpouseGrid'), 'spouseSheet', FIELD_DEFS_SPOUSE);
     }
   });
 
