@@ -1,0 +1,44 @@
+# 배포 페이지 스모크 테스트 (읽기 전용 — 데이터 저장·삭제 동작은 하지 않음)
+# index.html이 바뀌면 GitHub Pages에 새 버전이 실제로 올라올 때까지 기다린 뒤 Playwright로 확인한다.
+name: 배포 페이지 Playwright 테스트
+
+on:
+  push:
+    branches: [main]
+    paths: ['index.html', 'tests/**', 'package.json']
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'   # 매주 월요일 09:00(KST) 정기 점검
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://h9239021-ops.github.io/geunte-attendance/
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 새 버전이 Pages에 반영될 때까지 대기 (최대 10분)
+        run: |
+          want=$(sha256sum index.html | cut -d' ' -f1)
+          for i in $(seq 1 40); do
+            got=$(curl -fsSL "$SITE_URL?nocache=$RANDOM$i" | sha256sum | cut -d' ' -f1 || true)
+            if [ "$got" = "$want" ]; then echo "반영 확인 (${i}회차)"; exit 0; fi
+            echo "아직 이전 버전 — 15초 후 재확인 ($i/40)"; sleep 15
+          done
+          echo "::error::10분 안에 Pages 반영을 확인하지 못했습니다 (Settings → Pages 배포 상태 확인 필요)"; exit 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
