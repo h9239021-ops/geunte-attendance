@@ -4772,7 +4772,7 @@
     const missingByName = mailMissingByName(doc);
     const underItems = underList.map(row=>({
       org: row.사업부 || '', name: row.성명, email: emailMap[row.성명] || row._email || '', meta: mailField(row.미달시간), row,
-      extra: (missingByName[row.성명] || []).length ? (missingByName[row.성명].length + '건 (' + missingByName[row.성명].map(r => String(r.근무일).replace(/^\d{4}-/, '')).join(', ') + ')') : '-',
+      extra: (missingByName[row.성명] || []).length ? (missingByName[row.성명].length + '건') : '-', // 목록엔 건수만 — 날짜는 메일 초안(미리보기)에 표기
       logInfo: underLogMap[row.성명] || null
     }));
     lastMailUnderItems = underItems;
