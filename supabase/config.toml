@@ -1,0 +1,6 @@
+# Supabase CLI 설정 (GitHub Actions 배포용 최소 구성)
+project_id = "wvolctqklbmmlzosexel"
+
+[functions.geunte-ai-draft]
+# 로그인한 사용자(유효한 JWT)만 호출 가능
+verify_jwt = true
