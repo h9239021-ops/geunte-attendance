@@ -1,0 +1,29 @@
+# Edge Function 자동 배포 (관리 의견 AI 초안: geunte-ai-draft)
+name: Supabase Edge Function 배포
+
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/functions/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Anthropic API 키를 Edge Function 비밀값으로 등록
+        if: env.ANTHROPIC_API_KEY != ''
+        run: supabase secrets set ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --project-ref "$PROJECT_REF"
+      - name: API 키 미등록 안내
+        if: env.ANTHROPIC_API_KEY == ''
+        run: echo "::warning::ANTHROPIC_API_KEY 시크릿이 없어 함수만 배포합니다. 호출 시 빈 초안으로 대체됩니다."
+      - name: 함수 배포
+        run: supabase functions deploy geunte-ai-draft --project-ref "$PROJECT_REF"
