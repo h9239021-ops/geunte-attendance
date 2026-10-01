@@ -2617,13 +2617,15 @@
       note: /배우자/.test(String(mv(r, s.mapping, 'leaveType') || '')) ? '배우자출산휴가' : '휴직'
     })).filter(r => r.name && r.start && r.end);
   }
+  const OPEN_END_DATE = new Date(9999, 11, 31);
   function normalizeShortSheet(){
     const s = state.shortSheet;
     if(!s.mapping) s.mapping = guessMapping(s.headers, FIELD_DEFS_SHORT);
     return s.rows.map(r=>({
       name: String(mv(r, s.mapping, 'name') || '').trim(),
       start: parseDateCell(mv(r, s.mapping, 'startDate')),
-      end: parseDateCell(mv(r, s.mapping, 'endDate')),
+      // 종료일이 비어 있으면(아직 진행 중인 단축근로) 끝나는 날이 없는 것으로 본다.
+      end: parseDateCell(mv(r, s.mapping, 'endDate')) || OPEN_END_DATE,
       shortHours: parseDurationHours(mv(r, s.mapping, 'shortHours')) || 0
     })).filter(r => r.name && r.start && r.end);
   }
