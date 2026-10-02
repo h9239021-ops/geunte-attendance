@@ -1163,7 +1163,8 @@
             <li>근로시간 현황 실근로시간 + 과다 휴게시간 보정 &lt; 의무 기준인 사람을 뽑았습니다.</li>
             <li>인원 현황에 "단시간 근로자 월 기준시간"을 올린 사람은 그 사람만 이 개인별 기준시간으로 판단하고, 비고에 "단시간"이라고 표시됩니다.</li>
             <li>휴직·단축근로·배우자출산휴가 현황을 올렸고 단축근로 기록에 "단축시간"이 있으면, 그 사람만 "단축시간 × 이번 달 근무일수"만큼 기준시간에서 자동으로 빼서 판단하고 비고에 "단축 5"처럼 단축시간과 함께 표시됩니다(제외 기본 체크는 안 됨 — 줄어든 기준으로 그대로 판단).</li>
-            <li>이번 기간 입사자는 "입사월", 휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다. 휴직(+병가) 시트(배우자 출산휴가 포함)에서 이번 달과 겹치는 사람도 마찬가지로 표시·제외됩니다.</li>
+            <li>이번 기간 입사자는 공통 기준 대신 "1일 8시간 × 입사일부터 말일까지 근무일수"를 기준시간으로 자동 계산해서 판단하고, 비고에 "입사월 12일"처럼 표시됩니다(입사일은 인원 현황 파일 기준, 제외 기본 체크 안 됨).</li>
+            <li>휴직·퇴직자는 "휴직"·"퇴직"이 비고에 표시되고 "제외"가 기본 체크됩니다. 휴직(+병가) 시트(배우자 출산휴가 포함)에서 이번 달과 겹치는 사람도 마찬가지로 표시·제외됩니다.</li>
             <li>이 외에 개별적으로 제외할 사람이 있으면 "제외" 열을 직접 체크해주세요.</li>
           </ul>
         </div>
@@ -2130,7 +2131,7 @@
     {key:'saupbu', label:'사업부', required:true, guess:['사업부']},
     {key:'bumun', label:'부문 (선택 — 사업부 값이 비어있을 때만 대신 사용)', required:false, guess:['부문']},
     {key:'employStatus', label:'재직 상태 (선택 — "퇴직"·"휴직"인 사람은 결과 목록에 비고로 표시되고 "제외"가 기본으로 체크됩니다)', required:false, guess:['재직상태','재직 상태','재직여부','상태']},
-    {key:'hireDate', label:'입사일 (선택 — 기준 대상 기간에 입사한 사람을 "입사월"로 표기)', required:false, guess:['입사일','입사날짜','입사연월일','입사']},
+    {key:'hireDate', label:'입사일 (선택 — 기준 대상 기간에 입사한 사람은 "입사월"로 표기하고 의무 근로시간 기준을 1일 8시간 × 입사일부터 근무일수로 자동 계산)', required:false, guess:['입사일','입사날짜','입사연월일','입사']},
     {key:'standardHours', label:'단시간 근로자 월 기준시간 (선택 — 값이 있으면 이 사람만 의무 근로시간 판정 기준으로 이 시간을 쓰고, 비고에 "단시간"으로 표기)', required:false, guess:['기준시간','월기준시간','단시간기준시간','단시간 기준시간']}
   ];
 
@@ -2903,6 +2904,21 @@
   }
 
   // 입사일이 지금 선택된 기준 대상 기간(연·월)과 같은 달인지 — 지각자·의무근로시간 미달자 표에서 "입사월"로 표기하는 데 씀.
+  const HIRE_MONTH_DAILY_HOURS = 8;
+  // start~end(포함) 사이 근무일수. 출퇴근 현황에 그 사람의 행이 있으면 평일·근무일(근무일구분 기준값 적용)인
+  // 날짜 수를 세고, 행이 하나도 없으면 달력상 평일 수로 대신한다.
+  function countWorkDays(f1, name, start, end, params){
+    if(!start || !end || start > end) return 0;
+    const days = new Set();
+    f1.forEach(x=>{
+      if(x.name === name && x.date >= start && x.date <= end && isWorkDay(x, params) && isWeekday(x.date)) days.add(x.date.getTime());
+    });
+    if(days.size) return days.size;
+    let n = 0;
+    for(let d = new Date(start.getFullYear(), start.getMonth(), start.getDate()); d <= end; d.setDate(d.getDate()+1)){ if(isWeekday(d)) n++; }
+    return n;
+  }
+
   function isHireMonth(hireDate){
     if(!hireDate) return false;
     const ym = selectedYearMonth();
@@ -2954,19 +2970,26 @@
       // 단시간 근로자는 인원 현황에서 올린 개인별 월 기준시간을 그대로 쓴다(최우선). 그게 없고, 이 사람이 이번
       // 연월과 겹치는 단축근로 기록이 있으면 "단축시간 × 그 기간에 포함되는 실제 근무일수"만큼 전체 공통 기준
       // (params.minHours)에서 자동으로 빼서 쓴다(2026-10-01 신규, 리니 님 요청). 셋 다 없으면 판단 기준이 없어 건너뛴다.
+      // 이번 달 입사자는 공통 기준 대신 "1일 8시간 × 입사일~말일 근무일수"를 기준으로 쓴다(2026-10-02 신규, 입사일은 인원 현황 기준).
       const customMin = nameStandardMap[r.name] || 0;
       let shortRec = null;
       let effectiveMin = customMin;
+      let hireDays = null;
       if(!customMin){
-        shortRec = shortRecordForMonth(extraLookup, r.name, monthRange);
-        if(shortRec && shortRec.shortHours && params.minHours && monthRange){
-          const overlapStart = shortRec.start > monthRange.start ? shortRec.start : monthRange.start;
-          const overlapEnd = shortRec.end < monthRange.end ? shortRec.end : monthRange.end;
-          const workDaysInOverlap = f1.filter(x => x.name === r.name && isWorkDay(x, params) && x.date >= overlapStart && x.date <= overlapEnd).length;
-          effectiveMin = Math.max(0, params.minHours - shortRec.shortHours * workDaysInOverlap);
-        }else{
-          effectiveMin = params.minHours;
+        let baseMin = params.minHours;
+        const hireDate = nameHireMap[r.name];
+        if(baseMin && monthRange && isHireMonth(hireDate)){
+          hireDays = countWorkDays(f1, r.name, hireDate, monthRange.end, params);
+          baseMin = HIRE_MONTH_DAILY_HOURS * hireDays;
         }
+        shortRec = shortRecordForMonth(extraLookup, r.name, monthRange);
+        if(shortRec && shortRec.shortHours && baseMin && monthRange){
+          let overlapStart = shortRec.start > monthRange.start ? shortRec.start : monthRange.start;
+          if(hireDays !== null && hireDate > overlapStart) overlapStart = hireDate;
+          const overlapEnd = shortRec.end < monthRange.end ? shortRec.end : monthRange.end;
+          baseMin = Math.max(0, baseMin - shortRec.shortHours * countWorkDays(f1, r.name, overlapStart, overlapEnd, params));
+        }
+        effectiveMin = baseMin;
       }
       if(!effectiveMin) return;
       const excessH = (excessByPerson[r.name]||0)/60;
@@ -2983,7 +3006,7 @@
         row.미달시간 = hoursToHHMM(effectiveMin - adjusted);
         // 퇴직 > 이번 연월과 겹치는 휴직·배우자 출산휴가 기간(2026-10-01 신규) > 재직 상태(휴직) >
         // 이번 기간 입사자("입사월") > 단시간 근로자("단시간") > 단축근로 기록("단축") 순으로 표기한다.
-        row.비고 = (nameStatusMap[r.name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, r.name, monthRange) || employStatusNote(nameStatusMap[r.name]) || (isHireMonth(nameHireMap[r.name]) ? '입사월' : (customMin ? '단시간' : shortNote(shortRec)));
+        row.비고 = (nameStatusMap[r.name] === '퇴직' ? '퇴직' : '') || leaveNoteForMonth(extraLookup, r.name, monthRange) || employStatusNote(nameStatusMap[r.name]) || (isHireMonth(nameHireMap[r.name]) ? ('입사월' + (hireDays !== null ? ' ' + hireDays + '일' : '')) : (customMin ? '단시간' : shortNote(shortRec)));
         under.push(applyFieldOverride(row));
       }
     });
